@@ -1,6 +1,6 @@
-COMPOSE      := docker compose
-COMPOSE_PROD := docker compose -f docker-compose.yml -f docker-compose.prod.yml
-COMPOSE_DEV  := docker compose -f docker-compose.yml -f docker-compose.dev.yml
+COMPOSE      := podman-compose
+COMPOSE_PROD := podman-compose -f docker-compose.yml -f docker-compose.prod.yml
+COMPOSE_DEV  := podman-compose -f docker-compose.yml -f docker-compose.dev.yml
 
 .PHONY: up up-dev down logs migrate seed test-api test-web lint typecheck
 
