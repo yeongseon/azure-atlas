@@ -23,7 +23,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       ENVIRONMENT: production
       ALLOWED_ORIGINS: "http://localhost:8080"
-      API_KEY: ""
+      API_KEY: "changeme-set-a-real-key-in-production"
     depends_on:
       - db
       - redis

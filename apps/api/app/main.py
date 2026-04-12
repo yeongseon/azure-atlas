@@ -1,3 +1,4 @@
+import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,6 +9,12 @@ from app.config import settings
 from app.routers import curation, domains, events, journeys, nodes, search
 
 API_V1_PREFIX = "/api/v1"
+
+if settings.environment != "development" and not settings.api_key:
+    sys.exit(
+        "FATAL: API_KEY must be set when ENVIRONMENT != development. "
+        "Set a non-empty API_KEY environment variable."
+    )
 
 
 @asynccontextmanager

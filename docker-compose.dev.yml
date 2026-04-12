@@ -1,12 +1,16 @@
 services:
+  api:
+    environment:
+      ENVIRONMENT: development
+      ALLOWED_ORIGINS: "http://localhost:5173"
+      API_KEY: ""
+
   web:
     build:
       context: ./apps/web
       dockerfile: Dockerfile.dev
     ports:
       - "5173:5173"
-    environment:
-      VITE_API_URL: http://localhost:8000/api/v1
     volumes:
       - ./apps/web:/app
       - /app/node_modules

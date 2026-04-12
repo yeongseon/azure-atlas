@@ -13,6 +13,17 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 """
 
 
+def _inject_tracking(sql: str, filename: str) -> str:
+    escaped = filename.replace("'", "''")
+    tracking = (
+        f"\nINSERT INTO schema_migrations (filename) VALUES ('{escaped}') ON CONFLICT DO NOTHING;"
+    )
+    stripped = sql.rstrip()
+    if stripped.upper().endswith("COMMIT;"):
+        return stripped[: stripped.upper().rfind("COMMIT;")] + tracking + "\nCOMMIT;\n"
+    return sql + tracking
+
+
 async def run_migrations(seed_only: bool = False) -> None:
     db_url = os.environ["DATABASE_URL"]
     conn = await asyncpg.connect(db_url)
@@ -37,11 +48,8 @@ async def run_migrations(seed_only: bool = False) -> None:
                 print(f"skip {sql_file.name} (already applied)")
                 continue
 
-            sql = sql_file.read_text()
+            sql = _inject_tracking(sql_file.read_text(), sql_file.name)
             await conn.execute(sql)
-            await conn.execute(
-                "INSERT INTO schema_migrations (filename) VALUES ($1)", sql_file.name
-            )
             print(f"applied {sql_file.name}")
     finally:
         await conn.close()
