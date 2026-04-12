@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useEvidence, useNode } from '../hooks/useAtlas'
 
 interface Props {
@@ -7,30 +7,6 @@ interface Props {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  panelDesktop: {
-    width: 380,
-    background: 'var(--surface-1)',
-    borderLeft: '1px solid var(--border)',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    height: '100%',
-  },
-  panelMobile: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    width: '100%',
-    height: '50vh',
-    background: 'var(--surface-1)',
-    borderTop: '1px solid var(--border)',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    zIndex: 50,
-    boxShadow: '0 -4px 12px rgba(0,0,0,0.2)',
-  },
   header: {
     padding: '1.25rem 1.25rem 1rem',
     borderBottom: '1px solid var(--border)',
@@ -138,34 +114,57 @@ const s: Record<string, React.CSSProperties> = {
   empty: { color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '2rem 0' },
 }
 
+function isSafeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return ['http:', 'https:'].includes(parsed.protocol)
+  } catch {
+    return false
+  }
+}
+
 export default function EvidencePanel({ nodeId, onClose }: Props) {
-  const { data: nodeData, isLoading: nodeLoading } = useNode(nodeId)
-  const { data: evidenceData, isLoading: evLoading } = useEvidence(nodeId)
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const { data: nodeData, isLoading: nodeLoading, error: nodeError } = useNode(nodeId)
+  const { data: evidenceData, isLoading: evLoading, error: evError } = useEvidence(nodeId)
+  const closeBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [onClose])
+
+  useEffect(() => {
+    void nodeId
+    closeBtnRef.current?.focus()
+  }, [nodeId])
 
   const node = nodeData?.node
   const evidence = evidenceData?.evidence ?? []
 
   return (
-    <aside style={isMobile ? s.panelMobile : s.panelDesktop}>
+    <aside
+      className="evidence-panel"
+      aria-labelledby="evidence-panel-title"
+    >
       <div style={s.header}>
         <div>
           {nodeLoading ? (
-            <div style={{ color: 'var(--text-muted)' }}>Loading…</div>
+            <div id="evidence-panel-title" style={{ color: 'var(--text-muted)' }}>Loading…</div>
+          ) : nodeError ? (
+            <div id="evidence-panel-title" style={{ color: 'var(--text-muted)' }}>Failed to load node details</div>
           ) : (
             <>
-              <div style={s.label}>{node?.label}</div>
+              <div id="evidence-panel-title" style={s.label}>{node?.label}</div>
               <span className={`badge badge--${node?.node_type}`}>{node?.node_type}</span>
             </>
           )}
         </div>
         <button 
+          ref={closeBtnRef}
           type="button" 
           style={s.closeBtn} 
           onClick={onClose} 
@@ -181,10 +180,11 @@ export default function EvidencePanel({ nodeId, onClose }: Props) {
       <div style={s.evidenceSection}>
         <div style={s.evidenceTitle}>Evidence ({evidence.length})</div>
         {evLoading && <div className="loading">Loading evidence…</div>}
-        {!evLoading && evidence.length === 0 && (
+        {evError && <div style={s.empty}>Failed to load evidence</div>}
+        {!evLoading && !evError && evidence.length === 0 && (
           <div style={s.empty}>No evidence available for this node.</div>
         )}
-        {evidence.map((ev) => {
+        {!evError && evidence.map((ev) => {
           const score = ev.confidence_score !== null ? Math.round((ev.confidence_score ?? 0) * 100) : null
           const scoreColor = score !== null ? (score > 80 ? 'var(--accent-green)' : score > 50 ? 'var(--accent-amber)' : 'var(--text-muted)') : 'var(--text-muted)'
           
@@ -195,7 +195,7 @@ export default function EvidencePanel({ nodeId, onClose }: Props) {
                 <span style={s.excerptText}>{ev.excerpt}</span>
               </div>
               
-              {ev.source_url && (
+              {ev.source_url && isSafeUrl(ev.source_url) && (
                 <a
                   href={ev.source_url}
                   target="_blank"

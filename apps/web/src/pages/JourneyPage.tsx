@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { useJourney } from '../hooks/useAtlas'
+import { Link, useParams } from 'react-router-dom'
 import EvidencePanel from '../components/EvidencePanel'
+import { useDomain, useJourney } from '../hooks/useAtlas'
 
 const s: Record<string, React.CSSProperties> = {
   page: { display: 'flex', height: 'calc(100vh - 54px)', overflow: 'hidden' },
@@ -137,6 +137,9 @@ export default function JourneyPage() {
   const { data, isLoading, error } = useJourney(journeyId ?? '')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
 
+  const domainId = data?.journey?.domain_id
+  const { data: domainData } = useDomain(domainId ?? '')
+
   if (isLoading) return <div className="loading">Loading journey…</div>
   if (error || !data) return <div className="error">Journey not found</div>
 
@@ -149,17 +152,19 @@ export default function JourneyPage() {
   return (
     <div style={s.page}>
       <div style={s.main}>
-        <div style={s.breadcrumb}>
+        <nav aria-label="Breadcrumb" style={s.breadcrumb}>
           <Link to="/" style={s.breadcrumbLink}>Domains</Link>
-          {journey.domain_id && (
+          {journey.domain_id && domainData?.domain?.label && (
             <>
               <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
-              <Link to={`/domains/${journey.domain_id}`} style={s.breadcrumbLink}>{journey.domain_id}</Link>
+              <Link to={`/domains/${journey.domain_id}`} style={s.breadcrumbLink}>
+                {domainData.domain.label}
+              </Link>
             </>
           )}
           <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
           <span style={{ color: 'var(--text-primary)' }}>Journeys</span>
-        </div>
+        </nav>
 
         <h1 style={s.title}>{journey.title}</h1>
         {journey.description && <p style={s.desc}>{journey.description}</p>}
@@ -184,6 +189,7 @@ export default function JourneyPage() {
                       style={isActive ? s.nodeCardActive : s.nodeCard}
                       onClick={() => setSelectedNodeId(isActive ? null : step.node_id)}
                       className={isActive ? "" : "card"}
+                      aria-expanded={isActive}
                     >
                       <div style={s.nodeLabel}>{step.label}</div>
                       {step.narrative && <p style={s.narrative}>{step.narrative}</p>}

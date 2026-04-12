@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useSearch } from '../hooks/useAtlas'
 
@@ -66,11 +66,15 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const initialQ = searchParams.get('q') ?? ''
-  const [input, setInput] = useState(initialQ)
+  const q = searchParams.get('q') ?? ''
+  const [input, setInput] = useState(q)
   const [isFocused, setIsFocused] = useState(false)
 
-  const { data, isLoading, error } = useSearch(initialQ)
+  useEffect(() => {
+    setInput(q)
+  }, [q])
+
+  const { data, isLoading, error } = useSearch(q)
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -107,6 +111,7 @@ export default function SearchPage() {
             boxShadow: isFocused ? '0 0 0 3px rgba(59,130,246,0.3)' : 'none',
           }}
           type="search"
+          aria-label="Search Azure concepts"
           placeholder="e.g. Virtual Network, ExpressRoute, Scale out…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -122,32 +127,32 @@ export default function SearchPage() {
         </button>
       </form>
 
-      {!initialQ && !isLoading && (
+      {!q && !isLoading && (
         <div style={s.heroContainer}>
           <div style={s.heroIcon}>🧭</div>
           <div style={s.heroText}>What Azure concept are you looking for?</div>
         </div>
       )}
 
-      {initialQ && (
+      {q && (
         <div style={s.meta}>
           {isLoading
             ? 'Searching…'
             : error
             ? 'Search failed'
-            : `${data?.total ?? 0} results for "${initialQ}"`}
+            : `${data?.total ?? 0} results for "${q}"`}
         </div>
       )}
 
       {error && <div className="error">Search failed. Please try again.</div>}
 
-      {!isLoading && !error && initialQ && (
+      {!isLoading && !error && q && (
         <div style={s.results}>
           {(data?.results ?? []).length === 0 && (
             <div className="state-view">
               <div className="state-view__icon">🔍</div>
               <div className="state-view__title">No results found</div>
-              <div className="state-view__desc">We couldn't find anything matching "{initialQ}". Try adjusting your search terms.</div>
+              <div className="state-view__desc">We couldn't find anything matching "{q}". Try adjusting your search terms.</div>
             </div>
           )}
           {(data?.results ?? []).map((node) => (

@@ -1,23 +1,28 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import WorldMapPage from './pages/WorldMapPage'
-import ConceptGraphPage from './pages/ConceptGraphPage'
-import SearchPage from './pages/SearchPage'
-import JourneyPage from './pages/JourneyPage'
+import { lazy, Suspense } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Nav from './components/Nav'
+import WorldMapPage from './pages/WorldMapPage'
+
+const ConceptGraphPage = lazy(() => import('./pages/ConceptGraphPage'))
+const SearchPage = lazy(() => import('./pages/SearchPage'))
+const JourneyPage = lazy(() => import('./pages/JourneyPage'))
 
 export default function App() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Nav />
       <main style={{ flex: 1 }}>
-        <Routes>
-          <Route path="/" element={<WorldMapPage />} />
-          <Route path="/domains/:domainId" element={<ConceptGraphPage />} />
-          <Route path="/nodes/:nodeId" element={<ConceptGraphPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/journeys/:journeyId" element={<JourneyPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense fallback={<div className="loading">Loading…</div>}>
+          <Routes>
+            <Route path="/" element={<WorldMapPage />} />
+            <Route path="/journeys" element={<WorldMapPage />} />
+            <Route path="/domains/:domainId" element={<ConceptGraphPage />} />
+            <Route path="/nodes/:nodeId" element={<ConceptGraphPage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/journeys/:journeyId" element={<JourneyPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   )

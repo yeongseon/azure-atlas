@@ -43,14 +43,11 @@ const s: Record<string, React.CSSProperties> = {
   },
   cardLabel: { fontWeight: 600, fontSize: '1.15rem', marginBottom: '0.5rem', color: 'var(--text-primary)' },
   cardDesc: { fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1rem' },
-  cardFooter: { display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 'auto' },
   section: { marginBottom: '4rem' },
   sectionTitle: { fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', color: 'var(--text-primary)' },
   journeyList: { display: 'flex', flexDirection: 'column', gap: '1rem' },
-  journeyCardContent: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' },
   journeyTitle: { fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.35rem', color: 'var(--text-primary)' },
   journeyDesc: { fontSize: '0.9rem', color: 'var(--text-secondary)' },
-  arrow: { color: 'var(--text-muted)', fontSize: '1.25rem', marginLeft: '1rem', transition: 'transform var(--transition)' }
 }
 
 const NodeIcon = ({ style, animation }: { style: React.CSSProperties, animation: string }) => (
@@ -64,7 +61,7 @@ const NodeIcon = ({ style, animation }: { style: React.CSSProperties, animation:
 
 export default function WorldMapPage() {
   const { data: domainsData, isLoading: domainsLoading, error: domainsError } = useDomains()
-  const { data: journeysData, isLoading: journeysLoading } = useJourneys()
+  const { data: journeysData, isLoading: journeysLoading, error: journeysError } = useJourneys()
 
   if (domainsError) return <div className="error">Failed to load domains</div>
 
@@ -85,7 +82,7 @@ export default function WorldMapPage() {
       </div>
 
       <div style={s.section}>
-        <div style={s.sectionTitle}>Domains</div>
+        <h2 style={s.sectionTitle}>Domains</h2>
         {domainsLoading ? (
           <div className="state-view">
             <div className="state-view__icon">🌐</div>
@@ -119,12 +116,14 @@ export default function WorldMapPage() {
       </div>
 
       <div style={s.section}>
-        <div style={s.sectionTitle}>Curated Journeys</div>
+        <h2 style={s.sectionTitle}>Curated Journeys</h2>
         {journeysLoading ? (
-           <div className="state-view">
-             <div className="state-view__icon">🗺️</div>
-             <div className="state-view__title">Loading Journeys...</div>
-           </div>
+            <div className="state-view">
+              <div className="state-view__icon">🗺️</div>
+              <div className="state-view__title">Loading Journeys...</div>
+            </div>
+        ) : journeysError ? (
+          <div className="error">Failed to load journeys</div>
         ) : journeys.length === 0 ? (
           <div className="state-view">
             <div className="state-view__icon">🛤️</div>
@@ -148,4 +147,3 @@ export default function WorldMapPage() {
     </div>
   )
 }
-

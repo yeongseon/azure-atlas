@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import CytoscapeGraph from '../components/CytoscapeGraph'
 import EvidencePanel from '../components/EvidencePanel'
 import { useDomain, useSubgraph } from '../hooks/useAtlas'
@@ -94,6 +94,10 @@ export default function ConceptGraphPage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(nodeId || null)
   const [depth, setDepth] = useState(1)
 
+  useEffect(() => {
+    setSelectedNodeId(nodeId || null)
+  }, [nodeId])
+
   const isDomainView = !!domainId && !nodeId
   const isNodeView = !!nodeId
 
@@ -109,10 +113,40 @@ export default function ConceptGraphPage() {
     error: subgraphError,
   } = useSubgraph(nodeId ?? '', depth)
 
-  const handleNodeNavigate = (id: string) => {
-    navigate(`/nodes/${id}`)
+  const handleNodeClick = useCallback((id: string) => {
     setSelectedNodeId(id)
-  }
+    navigate(`/nodes/${id}`)
+  }, [navigate])
+
+  const graphNodes = useMemo(() => (
+    isDomainView
+      ? (domainData?.nodes ?? []).map((n) => ({
+          node_id: n.node_id,
+          label: n.label,
+          node_type: n.node_type,
+          summary: n.summary,
+          evidence_count: n.evidence_count,
+        }))
+      : (subgraphData?.nodes ?? [])
+  ), [isDomainView, domainData, subgraphData])
+
+  const graphEdges = useMemo(() => (
+    isDomainView
+      ? (domainData?.edges ?? []).map((e) => ({
+          edge_id: e.edge_id,
+          source_id: e.source_id,
+          target_id: e.target_id,
+          relation_type: e.relation_type,
+          weight: Number(e.weight),
+        }))
+      : (subgraphData?.edges ?? []).map((e) => ({
+          edge_id: e.edge_id,
+          source_id: e.source_id,
+          target_id: e.target_id,
+          relation_type: e.relation_type,
+          weight: Number(e.weight),
+        }))
+  ), [isDomainView, domainData, subgraphData])
 
   if (domainLoading || subgraphLoading) {
     return <div className="loading">Loading graph…</div>
@@ -121,32 +155,6 @@ export default function ConceptGraphPage() {
     return <div className="error">Failed to load graph data</div>
   }
 
-  const graphNodes = isDomainView
-    ? (domainData?.nodes ?? []).map((n) => ({
-        node_id: n.node_id,
-        label: n.label,
-        node_type: n.node_type,
-        summary: n.summary,
-        evidence_count: n.evidence_count,
-      }))
-    : (subgraphData?.nodes ?? [])
-
-  const graphEdges = isDomainView
-    ? (domainData?.edges ?? []).map((e) => ({
-        edge_id: e.edge_id,
-        source_id: e.source_id,
-        target_id: e.target_id,
-        relation_type: e.relation_type,
-        weight: Number(e.weight),
-      }))
-    : (subgraphData?.edges ?? []).map((e) => ({
-        edge_id: e.edge_id,
-        source_id: e.source_id,
-        target_id: e.target_id,
-        relation_type: e.relation_type,
-        weight: Number(e.weight),
-      }))
-
   const centerId = isNodeView ? nodeId : undefined
   const domainLabel = domainData?.domain?.label ?? domainId
 
@@ -154,7 +162,7 @@ export default function ConceptGraphPage() {
     <div style={s.page}>
       <div style={s.toolbarContainer}>
         <div style={s.toolbar}>
-          <span style={s.breadcrumb}>
+          <nav aria-label="Breadcrumb" style={s.breadcrumb}>
             <Link to="/" style={s.breadcrumbLink}>Domains</Link>
             {domainId && (
               <>
@@ -165,10 +173,12 @@ export default function ConceptGraphPage() {
             {nodeId && (
               <>
                 <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
-                <span style={{ color: 'var(--text-primary)' }}>{nodeId}</span>
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {subgraphData?.nodes?.find(n => n.node_id === nodeId)?.label ?? nodeId}
+                </span>
               </>
             )}
-          </span>
+          </nav>
 
           <div style={s.toolbarRight}>
             <div style={s.legendInline}>
@@ -209,10 +219,7 @@ export default function ConceptGraphPage() {
               nodes={graphNodes}
               edges={graphEdges}
               centerNodeId={centerId}
-              onNodeClick={(id) => {
-                setSelectedNodeId(id)
-                handleNodeNavigate(id)
-              }}
+              onNodeClick={handleNodeClick}
             />
           )}
         </div>
@@ -220,7 +227,12 @@ export default function ConceptGraphPage() {
         {selectedNodeId && (
           <EvidencePanel
             nodeId={selectedNodeId}
-            onClose={() => setSelectedNodeId(null)}
+            onClose={() => {
+              setSelectedNodeId(null)
+              if (isNodeView) {
+                navigate(domainId ? `/domains/${domainId}` : '/')
+              }
+            }}
           />
         )}
       </div>

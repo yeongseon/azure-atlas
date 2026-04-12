@@ -25,9 +25,9 @@ export function useNode(id: string) {
   })
 }
 
-export function useSubgraph(id: string, depth = 1, relationTypes?: string[]) {
+export function useSubgraph(id: string, depth = 1) {
   return useQuery({
-    queryKey: queryKeys.subgraph(id, depth, relationTypes),
+    queryKey: queryKeys.subgraph(id, depth),
     queryFn: () => api.getSubgraph(id, depth),
     enabled: !!id,
   })
