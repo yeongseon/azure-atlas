@@ -2,43 +2,65 @@ import { Link } from 'react-router-dom'
 import { useDomains, useJourneys } from '../hooks/useAtlas'
 
 const s: Record<string, React.CSSProperties> = {
-  page: { padding: '2rem', maxWidth: '1100px', margin: '0 auto' },
-  heading: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' },
-  sub: { color: '#94a3b8', marginBottom: '2rem' },
+  page: { padding: '2rem', maxWidth: '1100px', margin: '0 auto', paddingBottom: '4rem' },
+  hero: { 
+    position: 'relative', 
+    padding: '3rem 0 2.5rem', 
+    marginBottom: '2.5rem', 
+    textAlign: 'center',
+    overflow: 'hidden'
+  },
+  heading: { 
+    fontSize: '2.75rem', 
+    fontWeight: 800, 
+    marginBottom: '1rem',
+    position: 'relative',
+    zIndex: 1,
+    letterSpacing: '-0.02em',
+    color: 'var(--text-primary)'
+  },
+  sub: { 
+    color: 'var(--text-secondary)', 
+    fontSize: '1.15rem',
+    maxWidth: '600px',
+    margin: '0 auto',
+    position: 'relative',
+    zIndex: 1,
+    lineHeight: 1.6
+  },
+  heroBg: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    pointerEvents: 'none',
+    zIndex: 0,
+    opacity: 0.6
+  },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-    gap: '1rem',
-    marginBottom: '3rem',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '1.25rem',
+    marginBottom: '4rem',
   },
-  card: {
-    background: '#1e293b',
-    border: '1px solid #334155',
-    borderRadius: '12px',
-    padding: '1.5rem',
-    cursor: 'pointer',
-    transition: 'border-color 0.15s',
-    textDecoration: 'none',
-    color: 'inherit',
-    display: 'block',
-  },
-  cardLabel: { fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.5rem' },
-  cardDesc: { fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.5 },
-  section: { marginBottom: '2rem' },
-  sectionTitle: { fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', color: '#cbd5e1' },
-  journeyList: { display: 'flex', flexDirection: 'column', gap: '0.75rem' },
-  journeyCard: {
-    background: '#1e293b',
-    border: '1px solid #334155',
-    borderRadius: '8px',
-    padding: '1rem 1.25rem',
-    textDecoration: 'none',
-    color: 'inherit',
-    display: 'block',
-  },
-  journeyTitle: { fontWeight: 600, marginBottom: '0.25rem' },
-  journeyDesc: { fontSize: '0.82rem', color: '#94a3b8' },
+  cardLabel: { fontWeight: 600, fontSize: '1.15rem', marginBottom: '0.5rem', color: 'var(--text-primary)' },
+  cardDesc: { fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1rem' },
+  cardFooter: { display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 'auto' },
+  section: { marginBottom: '4rem' },
+  sectionTitle: { fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', color: 'var(--text-primary)' },
+  journeyList: { display: 'flex', flexDirection: 'column', gap: '1rem' },
+  journeyCardContent: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' },
+  journeyTitle: { fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.35rem', color: 'var(--text-primary)' },
+  journeyDesc: { fontSize: '0.9rem', color: 'var(--text-secondary)' },
+  arrow: { color: 'var(--text-muted)', fontSize: '1.25rem', marginLeft: '1rem', transition: 'transform var(--transition)' }
 }
+
+const NodeIcon = ({ style, animation }: { style: React.CSSProperties, animation: string }) => (
+  <div style={{ position: 'absolute', animation: `${animation} 4s ease-in-out infinite`, ...style }}>
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <circle cx="20" cy="20" r="14" fill="var(--surface-2)" stroke="var(--border-strong)" strokeWidth="1" />
+      <circle cx="20" cy="20" r="4" fill="var(--brand)" />
+    </svg>
+  </div>
+)
 
 export default function WorldMapPage() {
   const { data: domainsData, isLoading: domainsLoading, error: domainsError } = useDomains()
@@ -46,23 +68,52 @@ export default function WorldMapPage() {
 
   if (domainsError) return <div className="error">Failed to load domains</div>
 
+  const domains = domainsData?.domains ?? []
+  const journeys = journeysData?.journeys ?? []
+
   return (
     <div style={s.page}>
-      <h1 style={s.heading}>Azure Knowledge Atlas</h1>
-      <p style={s.sub}>Explore Azure concepts as an interconnected knowledge map</p>
+      <div style={s.hero}>
+        <div style={s.heroBg}>
+          <NodeIcon style={{ top: '15%', left: '20%' }} animation="float-a" />
+          <NodeIcon style={{ bottom: '25%', right: '15%' }} animation="float-b" />
+          <NodeIcon style={{ top: '35%', right: '25%' }} animation="float-c" />
+          <NodeIcon style={{ bottom: '15%', left: '30%' }} animation="float-a" />
+        </div>
+        <h1 style={s.heading}>Azure Knowledge Atlas</h1>
+        <p style={s.sub}>Explore Azure concepts as an interconnected knowledge map</p>
+      </div>
 
       <div style={s.section}>
         <div style={s.sectionTitle}>Domains</div>
         {domainsLoading ? (
-          <div className="loading">Loading domains…</div>
+          <div className="state-view">
+            <div className="state-view__icon">🌐</div>
+            <div className="state-view__title">Loading Domains...</div>
+            <div className="state-view__desc">Preparing the knowledge map.</div>
+          </div>
+        ) : domains.length === 0 ? (
+          <div className="state-view">
+            <div className="state-view__icon">📭</div>
+            <div className="state-view__title">No Domains Found</div>
+            <div className="state-view__desc">There are no domains available yet.</div>
+          </div>
         ) : (
           <div style={s.grid}>
-            {(domainsData?.domains ?? []).map((d) => (
-              <Link key={d.domain_id} to={`/domains/${d.domain_id}`} style={s.card}>
-                <div style={s.cardLabel}>{d.label}</div>
-                {d.description && <div style={s.cardDesc}>{d.description}</div>}
-              </Link>
-            ))}
+            {domains.map((d, i: number) => {
+              const accentColor = i % 3 === 0 ? 'var(--accent-purple)' : i % 3 === 1 ? 'var(--accent-green)' : 'var(--accent-amber)'
+              return (
+                <Link
+                  key={d.domain_id}
+                  to={`/domains/${d.domain_id}`}
+                  className="card"
+                  style={{ borderLeft: `4px solid ${accentColor}`, display: 'flex', flexDirection: 'column' }}
+                >
+                  <div style={s.cardLabel}>{d.label}</div>
+                  {d.description && <div style={s.cardDesc}>{d.description}</div>}
+                </Link>
+              )
+            })}
           </div>
         )}
       </div>
@@ -70,13 +121,25 @@ export default function WorldMapPage() {
       <div style={s.section}>
         <div style={s.sectionTitle}>Curated Journeys</div>
         {journeysLoading ? (
-          <div className="loading">Loading journeys…</div>
+           <div className="state-view">
+             <div className="state-view__icon">🗺️</div>
+             <div className="state-view__title">Loading Journeys...</div>
+           </div>
+        ) : journeys.length === 0 ? (
+          <div className="state-view">
+            <div className="state-view__icon">🛤️</div>
+            <div className="state-view__title">No Journeys Found</div>
+            <div className="state-view__desc">Curated learning paths will appear here.</div>
+          </div>
         ) : (
           <div style={s.journeyList}>
-            {(journeysData?.journeys ?? []).map((j) => (
-              <Link key={j.journey_id} to={`/journeys/${j.journey_id}`} style={s.journeyCard}>
-                <div style={s.journeyTitle}>{j.title}</div>
-                {j.description && <div style={s.journeyDesc}>{j.description}</div>}
+            {journeys.map((j) => (
+              <Link key={j.journey_id} to={`/journeys/${j.journey_id}`} className="card" style={{ padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={s.journeyTitle}>{j.title}</div>
+                  {j.description && <div style={s.journeyDesc}>{j.description}</div>}
+                </div>
+                <div style={{ color: 'var(--text-muted)', flexShrink: 0, marginLeft: '1rem' }}>→</div>
               </Link>
             ))}
           </div>
@@ -85,3 +148,4 @@ export default function WorldMapPage() {
     </div>
   )
 }
+

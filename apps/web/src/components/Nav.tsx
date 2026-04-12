@@ -1,50 +1,118 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const styles: Record<string, React.CSSProperties> = {
   nav: {
     display: 'flex',
     alignItems: 'center',
-    gap: '2rem',
-    padding: '0.75rem 2rem',
-    background: '#1e293b',
-    borderBottom: '1px solid #334155',
+    height: '54px',
+    padding: '0 2rem',
+    background: 'rgba(15, 23, 42, 0.9)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    borderBottom: '1px solid var(--border)',
     position: 'sticky',
     top: 0,
     zIndex: 100,
   },
   brand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
     fontWeight: 700,
     fontSize: '1.1rem',
-    color: '#60a5fa',
+    color: '#fff',
     textDecoration: 'none',
+    marginRight: '3rem',
+  },
+  logoSvg: {
+    width: '20px',
+    height: '20px',
+    color: 'var(--brand)',
   },
   links: {
     display: 'flex',
-    gap: '1.5rem',
-    marginLeft: 'auto',
+    gap: '2rem',
+    height: '100%',
   },
   link: {
+    display: 'flex',
+    alignItems: 'center',
     fontSize: '0.9rem',
-    color: '#94a3b8',
+    color: 'var(--text-secondary)',
+    textDecoration: 'none',
+    borderBottom: '2px solid transparent',
+    transition: 'color var(--transition)',
+    fontWeight: 500,
   },
   activeLink: {
+    display: 'flex',
+    alignItems: 'center',
     fontSize: '0.9rem',
-    color: '#e2e8f0',
+    color: 'var(--brand)',
+    textDecoration: 'none',
+    borderBottom: '2px solid var(--brand)',
     fontWeight: 600,
+  },
+  actions: {
+    display: 'flex',
+    marginLeft: 'auto',
+    alignItems: 'center',
+  },
+  searchBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    borderRadius: 'var(--radius-sm)',
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    transition: 'all var(--transition)',
   },
 }
 
 export default function Nav() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  
   const isHome = pathname === '/' || pathname.startsWith('/domains') || pathname.startsWith('/nodes')
   const isSearch = pathname.startsWith('/search')
+  const isJourneys = pathname.startsWith('/journeys')
 
   return (
     <nav style={styles.nav}>
-      <Link to="/" style={styles.brand}>Azure Atlas</Link>
+      <Link to="/" style={styles.brand}>
+        <svg style={styles.logoSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" aria-labelledby="brandLogoTitle">
+          <title id="brandLogoTitle">Azure Atlas Logo</title>
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="19" r="3"></circle>
+          <line x1="8.12" y1="16.88" x2="15.88" y2="7.12"></line>
+        </svg>
+        Azure Atlas
+      </Link>
+      
       <div style={styles.links}>
         <Link to="/" style={isHome ? styles.activeLink : styles.link}>Domains</Link>
         <Link to="/search" style={isSearch ? styles.activeLink : styles.link}>Search</Link>
+        <Link to="/journeys" style={isJourneys ? styles.activeLink : styles.link}>Journeys</Link>
+      </div>
+
+      <div style={styles.actions}>
+        <button 
+          type="button" 
+          style={styles.searchBtn} 
+          onClick={() => navigate('/search')}
+          aria-label="Search"
+          className="search-nav-btn"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" aria-labelledby="searchIconTitle">
+            <title id="searchIconTitle">Search</title>
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
       </div>
     </nav>
   )

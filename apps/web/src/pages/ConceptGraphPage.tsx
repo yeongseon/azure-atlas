@@ -5,70 +5,93 @@ import EvidencePanel from '../components/EvidencePanel'
 import { useDomain, useSubgraph } from '../hooks/useAtlas'
 
 const s: Record<string, React.CSSProperties> = {
-  page: { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 53px)' },
+  page: { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 54px)' },
+  toolbarContainer: {
+    flexShrink: 0,
+    background: 'var(--surface-1)',
+    position: 'relative',
+  },
   toolbar: {
     display: 'flex',
     alignItems: 'center',
     gap: '1rem',
-    padding: '0.6rem 1.5rem',
-    background: '#1e293b',
-    borderBottom: '1px solid #334155',
-    flexShrink: 0,
+    padding: '0.75rem 2rem',
   },
-  breadcrumb: { fontSize: '0.85rem', color: '#94a3b8' },
-  depthLabel: { fontSize: '0.82rem', color: '#64748b', marginLeft: 'auto' },
-  depthBtn: {
-    background: '#334155',
-    border: 'none',
-    borderRadius: 6,
-    color: '#e2e8f0',
-    padding: '3px 10px',
-    fontSize: '0.82rem',
+  toolbarGradient: {
+    height: '2px',
+    background: 'linear-gradient(90deg, var(--brand) 0%, var(--accent-purple) 50%, var(--accent-green) 100%)',
+    width: '100%',
   },
-  depthBtnActive: {
-    background: '#3b82f6',
-    border: 'none',
-    borderRadius: 6,
-    color: '#fff',
-    padding: '3px 10px',
-    fontSize: '0.82rem',
-    fontWeight: 600,
-  },
-  body: { flex: 1, display: 'flex', overflow: 'hidden' },
-  graphContainer: { flex: 1, position: 'relative' },
-  legend: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    background: 'rgba(15,23,42,0.85)',
-    border: '1px solid #334155',
-    borderRadius: 8,
-    padding: '0.6rem 0.9rem',
-    fontSize: '0.76rem',
+  breadcrumb: { fontSize: '0.9rem', color: 'var(--text-secondary)' },
+  breadcrumbLink: { color: 'var(--text-secondary)', textDecoration: 'none' },
+  toolbarRight: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: 4,
+    alignItems: 'center',
+    gap: '1.5rem',
+    marginLeft: 'auto',
+  },
+  legendInline: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    fontSize: '0.8rem',
+    color: 'var(--text-secondary)',
+  },
+  legendItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.35rem',
   },
   legendDot: {
     display: 'inline-block',
-    width: 10,
-    height: 10,
+    width: 8,
+    height: 8,
     borderRadius: '50%',
-    marginRight: 6,
   },
+  depthControl: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    background: 'var(--surface-0)',
+    padding: '4px',
+    borderRadius: '100px',
+    border: '1px solid var(--border)',
+  },
+  depthLabel: { fontSize: '0.8rem', color: 'var(--text-muted)', paddingLeft: '8px' },
+  depthBtn: {
+    background: 'transparent',
+    border: 'none',
+    borderRadius: '100px',
+    color: 'var(--text-secondary)',
+    padding: '4px 12px',
+    fontSize: '0.8rem',
+    transition: 'all var(--transition)',
+  },
+  depthBtnActive: {
+    background: 'var(--surface-2)',
+    border: 'none',
+    borderRadius: '100px',
+    color: 'var(--text-primary)',
+    padding: '4px 12px',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+  },
+  body: { flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' },
+  graphContainer: { flex: 1, position: 'relative' },
 }
 
 const LEGEND = [
-  { type: 'service', color: '#3b82f6' },
-  { type: 'concept', color: '#8b5cf6' },
-  { type: 'feature', color: '#10b981' },
-  { type: 'pattern', color: '#f59e0b' },
+  { type: 'service', color: 'var(--brand)' },
+  { type: 'concept', color: 'var(--accent-purple)' },
+  { type: 'feature', color: 'var(--accent-green)' },
+  { type: 'pattern', color: 'var(--accent-amber)' },
 ]
 
 export default function ConceptGraphPage() {
   const { domainId, nodeId } = useParams<{ domainId?: string; nodeId?: string }>()
   const navigate = useNavigate()
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(nodeId || null)
   const [depth, setDepth] = useState(1)
 
   const isDomainView = !!domainId && !nodeId
@@ -129,38 +152,52 @@ export default function ConceptGraphPage() {
 
   return (
     <div style={s.page}>
-      <div style={s.toolbar}>
-        <span style={s.breadcrumb}>
-          <Link to="/">Domains</Link>
-          {domainId && (
-            <>
-              {' / '}
-              <Link to={`/domains/${domainId}`}>{domainLabel}</Link>
-            </>
-          )}
-          {nodeId && (
-            <>
-              {' / '}
-              <span style={{ color: '#e2e8f0' }}>{nodeId}</span>
-            </>
-          )}
-        </span>
+      <div style={s.toolbarContainer}>
+        <div style={s.toolbar}>
+          <span style={s.breadcrumb}>
+            <Link to="/" style={s.breadcrumbLink}>Domains</Link>
+            {domainId && (
+              <>
+                <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
+                <Link to={`/domains/${domainId}`} style={s.breadcrumbLink}>{domainLabel}</Link>
+              </>
+            )}
+            {nodeId && (
+              <>
+                <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
+                <span style={{ color: 'var(--text-primary)' }}>{nodeId}</span>
+              </>
+            )}
+          </span>
 
-        {isNodeView && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: 'auto' }}>
-            <span style={s.depthLabel}>Depth:</span>
-            {[1, 2, 3].map((d) => (
-              <button
-                key={d}
-                type="button"
-                style={d === depth ? s.depthBtnActive : s.depthBtn}
-                onClick={() => setDepth(d)}
-              >
-                {d}
-              </button>
-            ))}
+          <div style={s.toolbarRight}>
+            <div style={s.legendInline}>
+              {LEGEND.map(({ type, color }) => (
+                <span key={type} style={s.legendItem}>
+                  <span style={{ ...s.legendDot, background: color }} />
+                  {type}
+                </span>
+              ))}
+            </div>
+
+            {isNodeView && (
+              <div style={s.depthControl}>
+                <span style={s.depthLabel}>Depth</span>
+                {[1, 2, 3].map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    style={d === depth ? s.depthBtnActive : s.depthBtn}
+                    onClick={() => setDepth(d)}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
+        <div style={s.toolbarGradient} />
       </div>
 
       <div style={s.body}>
@@ -178,14 +215,6 @@ export default function ConceptGraphPage() {
               }}
             />
           )}
-          <div style={s.legend}>
-            {LEGEND.map(({ type, color }) => (
-              <span key={type}>
-                <span style={{ ...s.legendDot, background: color }} />
-                {type}
-              </span>
-            ))}
-          </div>
         </div>
 
         {selectedNodeId && (
