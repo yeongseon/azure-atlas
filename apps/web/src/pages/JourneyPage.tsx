@@ -110,25 +110,19 @@ export default function JourneyPage() {
                   <div style={s.circle}>{step.step_order}</div>
                   {!isLast && <div style={s.line} />}
                 </div>
-                <div style={s.stepContent}>
-                  <button
-                    type="button"
-                    style={isActive ? s.nodeCardActive : s.nodeCard}
-                    onClick={() =>
-                      setSelectedNodeId(isActive ? null : step.node_id)
-                    }
-                  >
-                    <div style={s.nodeLabel}>{step.label}</div>
-                    {step.narrative && <p style={s.narrative}>{step.narrative}</p>}
-                    <Link
-                      to={`/nodes/${step.node_id}`}
-                      style={s.exploreLink}
-                      onClick={(e) => e.stopPropagation()}
+                  <div style={s.stepContent}>
+                    <button
+                      type="button"
+                      style={isActive ? s.nodeCardActive : s.nodeCard}
+                      onClick={() => setSelectedNodeId(isActive ? null : step.node_id)}
                     >
+                      <div style={s.nodeLabel}>{step.label}</div>
+                      {step.narrative && <p style={s.narrative}>{step.narrative}</p>}
+                    </button>
+                    <Link to={`/nodes/${step.node_id}`} style={s.exploreLink}>
                       Explore in graph →
                     </Link>
-                  </button>
-                </div>
+                  </div>
               </div>
             )
           })}

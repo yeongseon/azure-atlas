@@ -36,15 +36,15 @@ const styles: Record<string, React.CSSProperties> = {
 
 export default function Nav() {
   const { pathname } = useLocation()
-  const linkStyle = (to: string) =>
-    pathname === to || pathname.startsWith(to + '/') ? styles.activeLink : styles.link
+  const isHome = pathname === '/' || pathname.startsWith('/domains') || pathname.startsWith('/nodes')
+  const isSearch = pathname.startsWith('/search')
 
   return (
     <nav style={styles.nav}>
       <Link to="/" style={styles.brand}>Azure Atlas</Link>
       <div style={styles.links}>
-        <Link to="/" style={linkStyle('/__home')}>Domains</Link>
-        <Link to="/search" style={linkStyle('/search')}>Search</Link>
+        <Link to="/" style={isHome ? styles.activeLink : styles.link}>Domains</Link>
+        <Link to="/search" style={isSearch ? styles.activeLink : styles.link}>Search</Link>
       </div>
     </nav>
   )

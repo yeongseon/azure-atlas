@@ -30,3 +30,8 @@ vite.svg
 .vscode/
 *.swp
 *.swo
+
+# Generated / build artifacts
+uv.lock
+tsconfig.tsbuildinfo
+apps/web/tsconfig.tsbuildinfo

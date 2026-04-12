@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
     log_level: str = "info"
     environment: str = "development"
+    allowed_origins: str = "http://localhost:8080,http://localhost:5173"
 
 
 settings = Settings()
