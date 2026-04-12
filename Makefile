@@ -1,25 +1,26 @@
 COMPOSE      := docker compose
+COMPOSE_PROD := docker compose -f docker-compose.yml -f docker-compose.prod.yml
 COMPOSE_DEV  := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 
 .PHONY: up up-dev down logs migrate seed test-api test-web lint typecheck
 
 up:
-	$(COMPOSE) up --build -d
+	$(COMPOSE_PROD) up --build -d
 
 up-dev:
 	$(COMPOSE_DEV) up --build -d
 
 down:
-	$(COMPOSE) down
+	$(COMPOSE_PROD) down
 
 logs:
-	$(COMPOSE) logs -f
+	$(COMPOSE_PROD) logs -f
 
 migrate:
-	$(COMPOSE) run --rm api python -m app.migrate
+	$(COMPOSE_PROD) run --rm api python -m app.migrate
 
 seed:
-	$(COMPOSE) run --rm api python -m app.migrate --seed-only
+	$(COMPOSE_PROD) run --rm api python -m app.migrate --seed-only
 
 test-api:
 	docker build --target test -t azure-atlas-api-test apps/api && \
@@ -36,4 +37,4 @@ typecheck:
 	cd apps/web && pnpm typecheck
 
 lint:
-	$(COMPOSE) run --rm api ruff check . && cd apps/web && pnpm lint
+	$(COMPOSE_PROD) run --rm api ruff check . && cd apps/web && pnpm lint

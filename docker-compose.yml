@@ -23,7 +23,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       ENVIRONMENT: production
       ALLOWED_ORIGINS: "http://localhost:8080"
-      API_KEY: "changeme-set-a-real-key-in-production"
+      API_KEY: "${ATLAS_API_KEY:-}"
     depends_on:
       - db
       - redis
@@ -47,8 +47,6 @@ services:
       context: ./apps/web
     depends_on:
       - api
-    ports:
-      - "8080:80"
 
 volumes:
   pgdata:
