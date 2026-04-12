@@ -1,0 +1,148 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install API dependencies
+        run: |
+          if [ -f pyproject.toml ]; then
+            uv sync --dev
+          else
+            echo "apps/api/pyproject.toml not found; skipping dependency install"
+          fi
+
+      - name: Ruff check
+        run: |
+          if [ -f pyproject.toml ]; then
+            uv run ruff check .
+          else
+            echo "apps/api/pyproject.toml not found; skipping ruff"
+          fi
+
+  test-api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install API dependencies
+        run: |
+          if [ -f pyproject.toml ]; then
+            uv sync --dev
+          else
+            echo "apps/api/pyproject.toml not found; skipping dependency install"
+          fi
+
+      - name: Pytest
+        run: |
+          if [ -f pyproject.toml ]; then
+            uv run pytest
+          else
+            echo "apps/api/pyproject.toml not found; skipping pytest"
+          fi
+
+  lint-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install web dependencies
+        run: |
+          if [ -f package.json ]; then
+            pnpm install --frozen-lockfile
+          else
+            echo "apps/web/package.json not found; skipping install"
+          fi
+
+      - name: ESLint
+        run: |
+          if [ -f package.json ]; then
+            pnpm exec eslint .
+          else
+            echo "apps/web/package.json not found; skipping eslint"
+          fi
+
+  build-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install web dependencies
+        run: |
+          if [ -f package.json ]; then
+            pnpm install --frozen-lockfile
+          else
+            echo "apps/web/package.json not found; skipping install"
+          fi
+
+      - name: Build web
+        run: |
+          if [ -f package.json ]; then
+            pnpm build
+          else
+            echo "apps/web/package.json not found; skipping build"
+          fi
