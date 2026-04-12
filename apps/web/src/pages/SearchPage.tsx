@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useSearch } from '../hooks/useAtlas'
 
 const s: Record<string, React.CSSProperties> = {
@@ -52,7 +52,6 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const navigate = useNavigate()
   const initialQ = searchParams.get('q') ?? ''
   const [input, setInput] = useState(initialQ)
 
@@ -106,7 +105,6 @@ export default function SearchPage() {
               key={node.node_id}
               to={`/nodes/${node.node_id}`}
               style={s.card}
-              onClick={() => navigate(`/nodes/${node.node_id}`)}
             >
               <div style={s.cardTop}>
                 <span style={s.label}>{node.label}</span>

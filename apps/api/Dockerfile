@@ -1,4 +1,4 @@
-# ---- builder ----
+# ---- builder (prod deps only) ----
 FROM python:3.12-slim AS builder
 
 WORKDIR /build
@@ -8,7 +8,21 @@ RUN pip install --upgrade pip uv
 COPY pyproject.toml .
 RUN uv pip install --system --no-cache-dir .
 
-# ---- final ----
+# ---- test (prod + dev deps) ----
+FROM python:3.12-slim AS test
+
+WORKDIR /app
+
+RUN pip install --upgrade pip uv
+
+COPY pyproject.toml .
+RUN uv pip install --system --no-cache-dir ".[dev]"
+
+COPY . .
+
+CMD ["pytest", "tests/", "-v"]
+
+# ---- final (prod) ----
 FROM python:3.12-slim AS final
 
 WORKDIR /app

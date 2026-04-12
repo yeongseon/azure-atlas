@@ -23,7 +23,10 @@ async def run_migrations(seed_only: bool = False) -> None:
         sql_files = sorted(migrations_dir.glob("*.sql"))
 
         for sql_file in sql_files:
-            if seed_only and not sql_file.name.startswith("002"):
+            is_schema = sql_file.name.startswith("001")
+            is_seed = sql_file.name.startswith("002")
+
+            if seed_only and not is_schema and not is_seed:
                 continue
 
             already_applied = await conn.fetchval(

@@ -23,28 +23,28 @@ async def client():
             yield ac
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_health(client):
     response = await client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_v1_prefix_domains(client):
     response = await client.get("/api/v1/domains")
     assert response.status_code == 200
     assert "domains" in response.json()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_v1_prefix_search(client):
     response = await client.get("/api/v1/search?q=vnet")
     assert response.status_code == 200
     assert "results" in response.json()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_v1_prefix_journeys(client):
     response = await client.get("/api/v1/journeys")
     assert response.status_code == 200
