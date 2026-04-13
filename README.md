@@ -27,6 +27,9 @@ azure-atlas/
 
 ## MVP Scope
 
-- **Domain**: Network (VNet, Subnet, NSG, DNS, Public IP, Private Endpoint, Route Table, Private DNS)
+- **Domains**:
+  - **Network** (43 nodes) — VNet, Subnet, NSG, DNS, Load Balancer, Application Gateway, Front Door, Azure Firewall, VPN Gateway, ExpressRoute, Bastion, and more
+  - **Storage** (46 nodes) — Storage Account, Blob, Files, Queue, Table, Data Lake Gen2, Managed Disks, Replication, Encryption, and more
+  - **Compute** (48 nodes, VM-centric) — Virtual Machine, VMSS, Availability Sets/Zones, Trusted Launch, Disk Encryption, Autoscale, Backup, Site Recovery, and more
 - **Views**: Concept Graph + Evidence Panel + Search
-- **Journeys**: 5–7 curated scenarios
+- **Journeys**: 25 curated scenarios across 3 domains
