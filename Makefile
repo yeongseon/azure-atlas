@@ -63,8 +63,10 @@ demo: up-dev ## Start dev stack and print URLs
 	@echo "  Docs: http://localhost:8001/docs"
 
 smoke: ## Quick health check against running services
-	@echo "Checking API…"
-	@curl -sf http://localhost:8001/health > /dev/null && echo "  API: ok" || (echo "  API: FAIL" && exit 1)
+	@echo "Checking API health…"
+	@curl -sf http://localhost:8001/health > /dev/null && echo "  API /health: ok" || (echo "  API /health: FAIL" && exit 1)
+	@echo "Checking API readiness…"
+	@curl -sf http://localhost:8001/readyz > /dev/null && echo "  API /readyz: ok" || (echo "  API /readyz: FAIL" && exit 1)
 	@echo "Checking Web…"
 	@curl -sf http://localhost:5173 > /dev/null 2>&1 \
 	  || curl -sf http://localhost:8088 > /dev/null 2>&1 \
