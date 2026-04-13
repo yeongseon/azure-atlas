@@ -77,6 +77,16 @@ async def _run_seeds(conn: asyncpg.Connection, *, dry_run: bool = False) -> None
 
     for seed_file in seed_files:
         checksum = _file_checksum(seed_file)
+        row = await conn.fetchrow(
+            "SELECT checksum FROM schema_migrations WHERE filename = $1",
+            seed_file.name,
+        )
+
+        if row is not None:
+            if row["checksum"] and row["checksum"] != checksum:
+                print(f"WARNING: {seed_file.name} has changed since last applied")
+            print(f"skip {seed_file.name} (already applied)")
+            continue
 
         if dry_run:
             print(f"[dry-run] would apply seed: {seed_file.name}")
@@ -85,13 +95,7 @@ async def _run_seeds(conn: asyncpg.Connection, *, dry_run: bool = False) -> None
         sql = seed_file.read_text()
         await conn.execute(sql)
         await conn.execute(
-            """
-            INSERT INTO schema_migrations (filename, kind, checksum, applied_at)
-            VALUES ($1, 'seed', $2, now())
-            ON CONFLICT (filename) DO UPDATE
-                SET checksum = EXCLUDED.checksum,
-                    applied_at = EXCLUDED.applied_at
-            """,
+            "INSERT INTO schema_migrations (filename, kind, checksum) VALUES ($1, 'seed', $2)",
             seed_file.name,
             checksum,
         )

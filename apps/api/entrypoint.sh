@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Running database migrations…"
-python -m app.migrate
+echo "Running schema migrations…"
+python -m app.migrate --schema-only
 echo "Migrations complete."
 
 exec "$@"
