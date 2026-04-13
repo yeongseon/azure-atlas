@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Query
 
 from app.db import get_pool
+from app.models.nodes import NodePreview
+from app.models.search import SearchResponse
 
 router = APIRouter(prefix="/search", tags=["search"])
 
@@ -10,11 +12,11 @@ async def search(
     q: str = Query(default="", min_length=1),
     node_type: str | None = Query(default=None),
     limit: int = Query(default=20, ge=1, le=100),
-) -> dict:
+) -> SearchResponse:
     pool = await get_pool()
     q = q.strip()
     if not q:
-        return {"query": q, "results": [], "total": 0}
+        return SearchResponse(query=q, results=[], total=0)
 
     async with pool.acquire() as conn:
         base_filter = "n.status = 'approved'"
@@ -47,12 +49,12 @@ async def search(
         )
 
     results = [
-        {
-            "node_id": r["node_id"],
-            "label": r["label"],
-            "node_type": r["node_type"],
-            "summary": r["summary"],
-        }
-        for r in rows
+        NodePreview(
+            node_id=row["node_id"],
+            label=row["label"],
+            node_type=row["node_type"],
+            summary=row["summary"],
+        )
+        for row in rows
     ]
-    return {"query": q, "results": results, "total": len(results)}
+    return SearchResponse(query=q, results=results, total=len(results))

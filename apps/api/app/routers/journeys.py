@@ -1,12 +1,18 @@
 from fastapi import APIRouter, HTTPException
 
 from app.db import get_pool
+from app.models.journeys import (
+    JourneyDetailResponse,
+    JourneyListResponse,
+    JourneyPreview,
+    JourneyStep,
+)
 
 router = APIRouter(prefix="/journeys", tags=["journeys"])
 
 
 @router.get("")
-async def list_journeys() -> dict:
+async def list_journeys() -> JourneyListResponse:
     pool = await get_pool()
     async with pool.acquire() as conn:
         rows = await conn.fetch(
@@ -17,11 +23,11 @@ async def list_journeys() -> dict:
             ORDER BY title
             """
         )
-    return {"journeys": [dict(r) for r in rows]}
+    return JourneyListResponse(journeys=[JourneyPreview(**dict(row)) for row in rows])
 
 
 @router.get("/{journey_id}")
-async def get_journey(journey_id: str) -> dict:
+async def get_journey(journey_id: str) -> JourneyDetailResponse:
     pool = await get_pool()
     async with pool.acquire() as conn:
         journey = await conn.fetchrow(
@@ -46,7 +52,7 @@ async def get_journey(journey_id: str) -> dict:
             journey_id,
         )
 
-    return {
-        "journey": dict(journey),
-        "steps": [dict(s) for s in steps],
-    }
+    return JourneyDetailResponse(
+        journey=JourneyPreview(**dict(journey)),
+        steps=[JourneyStep(**dict(step)) for step in steps],
+    )

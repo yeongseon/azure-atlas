@@ -1,12 +1,14 @@
 from fastapi import APIRouter, HTTPException
 
 from app.db import get_pool
+from app.models.domains import DomainDetailResponse, DomainListResponse, DomainSummary
+from app.models.nodes import GraphEdgeSummary, GraphNodeSummary
 
 router = APIRouter(prefix="/domains", tags=["domains"])
 
 
 @router.get("")
-async def list_domains() -> dict:
+async def list_domains() -> DomainListResponse:
     pool = await get_pool()
     async with pool.acquire() as conn:
         rows = await conn.fetch(
@@ -17,11 +19,11 @@ async def list_domains() -> dict:
             ORDER BY display_order, label
             """
         )
-    return {"domains": [dict(r) for r in rows]}
+    return DomainListResponse(domains=[DomainSummary(**dict(row)) for row in rows])
 
 
 @router.get("/{domain_id}")
-async def get_domain(domain_id: str) -> dict:
+async def get_domain(domain_id: str) -> DomainDetailResponse:
     pool = await get_pool()
     async with pool.acquire() as conn:
         domain = await conn.fetchrow(
@@ -67,10 +69,14 @@ async def get_domain(domain_id: str) -> dict:
         )
 
     ec_map = {r["node_id"]: r["evidence_count"] for r in ev_counts}
-    node_list = [{**dict(n), "evidence_count": ec_map.get(n["node_id"], 0)} for n in nodes]
-    return {
-        "domain": dict(domain),
-        "nodes": node_list,
-        "edges": [dict(e) for e in edges],
-        "node_count": len(node_list),
-    }
+    node_list_typed = [
+        GraphNodeSummary(**{**dict(node), "evidence_count": ec_map.get(node["node_id"], 0)})
+        for node in nodes
+    ]
+    edge_list_typed = [GraphEdgeSummary(**dict(edge)) for edge in edges]
+    return DomainDetailResponse(
+        domain=DomainSummary(**dict(domain)),
+        nodes=node_list_typed,
+        edges=edge_list_typed,
+        node_count=len(node_list_typed),
+    )

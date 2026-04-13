@@ -12,11 +12,23 @@ class JourneyStep(BaseModel):
     narrative: Optional[str] = None
 
 
-class JourneyDetailResponse(BaseModel):
+class JourneyPreview(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     journey_id: str
+    domain_id: Optional[str] = None
     title: str
     description: Optional[str] = None
-    domain_id: Optional[str] = None
-    steps: list[JourneyStep] = []
+
+
+class JourneyListResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    journeys: list[JourneyPreview]
+
+
+class JourneyDetailResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    journey: JourneyPreview
+    steps: list[JourneyStep]

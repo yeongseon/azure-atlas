@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Security
-from fastapi.security import APIKeyHeader
+from fastapi import APIRouter, Depends, HTTPException
 
-from app.config import settings
+from app.auth import require_api_key
 from app.db import get_pool
-from app.models.curation import CurationDecisionRequest
+from app.models.curation import CurationDecisionRequest, CurationDecisionResponse
 
 router = APIRouter(prefix="/curation", tags=["curation"])
 
@@ -13,17 +12,9 @@ _STATUS_MAP = {
     "needs_refresh": "needs_refresh",
 }
 
-_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
-
-
-async def require_api_key(key: str | None = Security(_api_key_header)) -> None:
-    configured = settings.api_key
-    if configured and key != configured:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
-
 
 @router.post("/decisions", status_code=202, dependencies=[Depends(require_api_key)])
-async def create_decision(body: CurationDecisionRequest) -> dict:
+async def create_decision(body: CurationDecisionRequest) -> CurationDecisionResponse:
     if not any([body.node_id, body.edge_id, body.evidence_id]):
         raise HTTPException(
             status_code=422, detail="One of node_id, edge_id, or evidence_id is required"
@@ -63,4 +54,4 @@ async def create_decision(body: CurationDecisionRequest) -> dict:
                 if not updated:
                     raise HTTPException(status_code=404, detail="Evidence not found")
 
-    return {"ok": True}
+    return CurationDecisionResponse(ok=True)

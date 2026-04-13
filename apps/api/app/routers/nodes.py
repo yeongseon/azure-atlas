@@ -1,12 +1,21 @@
 from fastapi import APIRouter, HTTPException, Query
 
 from app.db import get_pool
+from app.models.nodes import (
+    EvidenceSummary,
+    GraphEdgeSummary,
+    GraphNodeSummary,
+    NodeDetail,
+    NodeDetailResponse,
+    NodeEvidenceResponse,
+    SubgraphResponse,
+)
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
 
 @router.get("/{node_id}")
-async def get_node(node_id: str) -> dict:
+async def get_node(node_id: str) -> NodeDetailResponse:
     pool = await get_pool()
     async with pool.acquire() as conn:
         node = await conn.fetchrow(
@@ -19,7 +28,7 @@ async def get_node(node_id: str) -> dict:
         )
         if not node:
             raise HTTPException(status_code=404, detail="Node not found")
-    return {"node": dict(node)}
+    return NodeDetailResponse(node=NodeDetail(**dict(node)))
 
 
 @router.get("/{node_id}/subgraph")
@@ -27,7 +36,7 @@ async def get_node_subgraph(
     node_id: str,
     depth: int = Query(default=1, ge=1, le=3),
     relation_types: list[str] | None = Query(default=None),
-) -> dict:
+) -> SubgraphResponse:
     pool = await get_pool()
     async with pool.acquire() as conn:
         exists = await conn.fetchval(
@@ -107,15 +116,15 @@ async def get_node_subgraph(
         else:
             edges = await conn.fetch(edge_query, all_node_ids)
 
-    return {
-        "center_node_id": node_id,
-        "nodes": [dict(n) for n in nodes],
-        "edges": [dict(e) for e in edges],
-    }
+    return SubgraphResponse(
+        center_node_id=node_id,
+        nodes=[GraphNodeSummary(**dict(node)) for node in nodes],
+        edges=[GraphEdgeSummary(**dict(edge)) for edge in edges],
+    )
 
 
 @router.get("/{node_id}/evidence")
-async def get_node_evidence(node_id: str) -> dict:
+async def get_node_evidence(node_id: str) -> NodeEvidenceResponse:
     pool = await get_pool()
     async with pool.acquire() as conn:
         exists = await conn.fetchval(
@@ -134,4 +143,7 @@ async def get_node_evidence(node_id: str) -> dict:
             """,
             node_id,
         )
-    return {"node_id": node_id, "evidence": [dict(r) for r in rows]}
+    return NodeEvidenceResponse(
+        node_id=node_id,
+        evidence=[EvidenceSummary(**dict(row)) for row in rows],
+    )

@@ -1,15 +1,16 @@
 import json
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.auth import require_api_key
 from app.db import get_pool
-from app.models.events import EventCreateRequest
+from app.models.events import EventCreateRequest, EventCreateResponse
 
 router = APIRouter(prefix="/events", tags=["events"])
 
 
-@router.post("")
-async def create_event(body: EventCreateRequest) -> dict:
+@router.post("", dependencies=[Depends(require_api_key)])
+async def create_event(body: EventCreateRequest) -> EventCreateResponse:
     pool = await get_pool()
     async with pool.acquire() as conn:
         payload_json = json.dumps(body.payload) if body.payload else None
@@ -23,4 +24,4 @@ async def create_event(body: EventCreateRequest) -> dict:
             payload_json,
             body.session_id,
         )
-    return {"ok": True, "event_id": event_id}
+    return EventCreateResponse(ok=True, event_id=event_id)

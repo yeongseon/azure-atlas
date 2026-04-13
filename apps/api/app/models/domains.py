@@ -2,22 +2,29 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.nodes import GraphEdgeSummary, GraphNodeSummary, NodePreview
+from app.models.nodes import GraphEdgeSummary, GraphNodeSummary
 
 
-class DomainListResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    domains: list[dict]
-
-
-class DomainOverviewResponse(BaseModel):
+class DomainSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     domain_id: str
     label: str
     description: Optional[str] = None
-    node_count: int = 0
-    nodes: list[NodePreview] = []
-    edges: list[GraphEdgeSummary] = []
-    central_nodes: list[GraphNodeSummary] = []
+    icon_url: Optional[str] = None
+    display_order: Optional[int] = None
+
+
+class DomainListResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    domains: list[DomainSummary]
+
+
+class DomainDetailResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    domain: DomainSummary
+    nodes: list[GraphNodeSummary]
+    edges: list[GraphEdgeSummary]
+    node_count: int
