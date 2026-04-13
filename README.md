@@ -25,6 +25,54 @@ azure-atlas/
     ontology/   # Seed data & schema definitions
 ```
 
+## Quickstart
+
+### Prerequisites
+
+- [Podman](https://podman.io/) + [podman-compose](https://github.com/containers/podman-compose)
+- [Node.js 20+](https://nodejs.org/) with [pnpm 9](https://pnpm.io/)
+- [Python 3.12+](https://www.python.org/) (for bare-metal API development)
+
+### One-command setup
+
+```bash
+make bootstrap
+```
+
+This copies `.env.example` → `.env`, builds all containers, starts the dev stack, and runs database migrations.
+
+### Common commands
+
+| Command | Description |
+|---------|-------------|
+| `make up-dev` | Start dev stack |
+| `make down-dev` | Stop dev stack |
+| `make logs-dev` | Tail dev logs |
+| `make reset-db` | Drop DB, recreate, and re-seed |
+| `make demo` | Start stack and print URLs |
+| `make smoke` | Health-check running services |
+| `make test-api` | Run API tests |
+| `make test-web` | Typecheck + lint web app |
+| `make lint` | Lint both API and web |
+| `make help` | Show all Make targets |
+
+### Workspace scripts
+
+```bash
+pnpm dev        # Start web dev server (bare-metal)
+pnpm build      # Build web for production
+pnpm lint       # Lint web app
+pnpm typecheck  # Typecheck web app
+```
+
+### URLs
+
+| Service | Dev | Prod |
+|---------|-----|------|
+| Web | http://localhost:5173 | http://localhost:8088 |
+| API | http://localhost:8001 | http://localhost:8001 |
+| API Docs | http://localhost:8001/docs | — |
+
 ## MVP Scope
 
 - **Domains**:

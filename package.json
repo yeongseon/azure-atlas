@@ -5,5 +5,12 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "dev": "pnpm --filter azure-atlas-web dev",
+    "build": "pnpm --filter azure-atlas-web build",
+    "test": "pnpm --filter azure-atlas-web test",
+    "lint": "pnpm --filter azure-atlas-web lint",
+    "typecheck": "pnpm --filter azure-atlas-web typecheck"
+  }
 }
