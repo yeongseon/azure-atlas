@@ -1,34 +1,7 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-
-
-@pytest.fixture
-async def client():
-    mock_pool = MagicMock()
-    mock_conn = AsyncMock()
-    mock_conn.__aenter__ = AsyncMock(return_value=mock_conn)
-    mock_conn.__aexit__ = AsyncMock(return_value=None)
-    mock_pool.acquire.return_value = mock_conn
-    mock_conn.fetch = AsyncMock(return_value=[])
-    mock_conn.fetchval = AsyncMock(return_value=1)
-
-    mock_redis = AsyncMock()
-    mock_redis.ping = AsyncMock(return_value=True)
-    mock_redis.aclose = AsyncMock()
-
-    with (
-        patch("app.db.create_pool", new_callable=AsyncMock),
-        patch("app.db.close_pool", new_callable=AsyncMock),
-        patch("app.db.get_pool", return_value=mock_pool),
-        patch("app.main.aioredis") as mock_aioredis,
-    ):
-        mock_aioredis.from_url.return_value = mock_redis
-        from app.main import app
-
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-            yield ac
 
 
 @pytest.mark.anyio
