@@ -1,9 +1,10 @@
 # Azure Atlas
 
+![CI](https://github.com/{owner}/{repo}/actions/workflows/ci.yml/badge.svg)
+
 > Explore Azure as a knowledge map.
 
-MS Learn Azure 공식 문서를 온톨로지 기반으로 재구성한 탐험형 지식 지도.
-검색 결과 목록이 아니라 **개념 노드 + 관계 엣지 + 공식 근거**로 Azure를 탐험합니다.
+An ontology-based knowledge map of Azure, built on official MS Learn documentation. Explore Azure through **concept nodes + relationship edges + evidence links** instead of flat search results.
 
 ## Stack
 
@@ -24,6 +25,17 @@ azure-atlas/
   packages/
     ontology/   # Seed data & schema definitions
 ```
+
+## Architecture
+
+The project follows a standard multi-tier architecture:
+
+- **Frontend**: React SPA using Cytoscape.js for graph visualization.
+- **API**: FastAPI providing RESTful endpoints and managing background tasks.
+- **Database**: PostgreSQL with FTS (pg_trgm) for full-text search and relational data.
+- **Cache/Queue**: Redis for state management and ARQ background workers.
+
+Data Flow: Browser (React SPA) → API (FastAPI) → Database (PostgreSQL)
 
 ## Quickstart
 
@@ -81,3 +93,11 @@ pnpm typecheck  # Typecheck web app
   - **Compute** (48 nodes, VM-centric) — Virtual Machine, VMSS, Availability Sets/Zones, Trusted Launch, Disk Encryption, Autoscale, Backup, Site Recovery, and more
 - **Views**: Concept Graph + Evidence Panel + Search
 - **Journeys**: 25 curated scenarios across 3 domains
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started, our code style, and the development process.
+
+## License
+
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for the full text.
