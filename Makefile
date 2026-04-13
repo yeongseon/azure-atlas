@@ -3,7 +3,7 @@ COMPOSE_PROD := podman-compose -f docker-compose.yml -f docker-compose.prod.yml
 COMPOSE_DEV  := podman-compose -f docker-compose.yml -f docker-compose.dev.yml
 
 .PHONY: up up-dev down down-dev logs logs-dev \
-        migrate seed bootstrap reset-db demo smoke \
+        migrate schema seed bootstrap reset-db demo smoke \
         test-api test-web lint typecheck help
 
 # ── Core ────────────────────────────────────────────────────
@@ -28,6 +28,9 @@ logs-dev:
 # ── Database ────────────────────────────────────────────────
 migrate:
 	$(COMPOSE_DEV) run --rm api python -m app.migrate
+
+schema:
+	$(COMPOSE_DEV) run --rm api python -m app.migrate --schema-only
 
 seed:
 	$(COMPOSE_DEV) run --rm api python -m app.migrate --seed-only

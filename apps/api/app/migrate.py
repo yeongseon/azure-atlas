@@ -1,60 +1,130 @@
+# pyright: reportMissingImports=false
+
 import asyncio
+import hashlib
 import os
 import pathlib
 import sys
 
 import asyncpg
 
-MIGRATIONS_TABLE = """
+REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent
+MIGRATIONS_DIR = REPO_ROOT / "apps" / "api" / "migrations"
+ONTOLOGY_DIR = REPO_ROOT / "packages" / "ontology"
+
+MIGRATIONS_TABLE = """\
 CREATE TABLE IF NOT EXISTS schema_migrations (
     filename TEXT PRIMARY KEY,
+    kind TEXT NOT NULL DEFAULT 'schema',
+    checksum TEXT,
     applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 """
 
-
-def _inject_tracking(sql: str, filename: str) -> str:
-    escaped = filename.replace("'", "''")
-    tracking = (
-        f"\nINSERT INTO schema_migrations (filename) VALUES ('{escaped}') ON CONFLICT DO NOTHING;"
-    )
-    stripped = sql.rstrip()
-    if stripped.upper().endswith("COMMIT;"):
-        return stripped[: stripped.upper().rfind("COMMIT;")] + tracking + "\nCOMMIT;\n"
-    return sql + tracking
+MIGRATIONS_TABLE_UPGRADE = """\
+ALTER TABLE schema_migrations ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'schema';
+ALTER TABLE schema_migrations ADD COLUMN IF NOT EXISTS checksum TEXT;
+"""
 
 
-async def run_migrations(seed_only: bool = False) -> None:
+def _file_checksum(path: pathlib.Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+async def _ensure_table(conn: asyncpg.Connection) -> None:
+    await conn.execute(MIGRATIONS_TABLE)
+    await conn.execute(MIGRATIONS_TABLE_UPGRADE)
+
+
+async def _run_schema(conn: asyncpg.Connection, *, dry_run: bool = False) -> None:
+    sql_files = sorted(MIGRATIONS_DIR.glob("*.sql"))
+    if not sql_files:
+        print("No schema migrations found.")
+        return
+
+    for sql_file in sql_files:
+        checksum = _file_checksum(sql_file)
+        row = await conn.fetchrow(
+            "SELECT checksum FROM schema_migrations WHERE filename = $1",
+            sql_file.name,
+        )
+
+        if row is not None:
+            if row["checksum"] and row["checksum"] != checksum:
+                print(f"WARNING: {sql_file.name} has changed since last applied")
+            print(f"skip {sql_file.name} (already applied)")
+            continue
+
+        if dry_run:
+            print(f"[dry-run] would apply schema: {sql_file.name}")
+            continue
+
+        sql = sql_file.read_text()
+        await conn.execute(sql)
+        await conn.execute(
+            "INSERT INTO schema_migrations (filename, kind, checksum) VALUES ($1, 'schema', $2)",
+            sql_file.name,
+            checksum,
+        )
+        print(f"applied {sql_file.name}")
+
+
+async def _run_seeds(conn: asyncpg.Connection, *, dry_run: bool = False) -> None:
+    seed_files = sorted(ONTOLOGY_DIR.glob("seed_*.sql"))
+    if not seed_files:
+        print("No seed files found.")
+        return
+
+    for seed_file in seed_files:
+        checksum = _file_checksum(seed_file)
+
+        if dry_run:
+            print(f"[dry-run] would apply seed: {seed_file.name}")
+            continue
+
+        sql = seed_file.read_text()
+        await conn.execute(sql)
+        await conn.execute(
+            """
+            INSERT INTO schema_migrations (filename, kind, checksum, applied_at)
+            VALUES ($1, 'seed', $2, now())
+            ON CONFLICT (filename) DO UPDATE
+                SET checksum = EXCLUDED.checksum,
+                    applied_at = EXCLUDED.applied_at
+            """,
+            seed_file.name,
+            checksum,
+        )
+        print(f"applied seed {seed_file.name}")
+
+
+async def run_migrations(
+    *, schema_only: bool = False, seed_only: bool = False, dry_run: bool = False
+) -> None:
     db_url = os.environ["DATABASE_URL"]
     conn = await asyncpg.connect(db_url)
     try:
-        await conn.execute(MIGRATIONS_TABLE)
+        await _ensure_table(conn)
 
-        migrations_dir = pathlib.Path(__file__).parent.parent / "migrations"
-        sql_files = sorted(migrations_dir.glob("*.sql"))
-
-        for sql_file in sql_files:
-            is_schema = sql_file.name.startswith("001")
-            is_seed = sql_file.name.startswith("002")
-
-            if seed_only and not is_schema and not is_seed:
-                continue
-
-            already_applied = await conn.fetchval(
-                "SELECT 1 FROM schema_migrations WHERE filename = $1",
-                sql_file.name,
-            )
-            if already_applied:
-                print(f"skip {sql_file.name} (already applied)")
-                continue
-
-            sql = _inject_tracking(sql_file.read_text(), sql_file.name)
-            await conn.execute(sql)
-            print(f"applied {sql_file.name}")
+        if seed_only:
+            await _run_seeds(conn, dry_run=dry_run)
+        elif schema_only:
+            await _run_schema(conn, dry_run=dry_run)
+        else:
+            await _run_schema(conn, dry_run=dry_run)
+            await _run_seeds(conn, dry_run=dry_run)
     finally:
         await conn.close()
 
 
 if __name__ == "__main__":
+    schema_only = "--schema-only" in sys.argv
     seed_only = "--seed-only" in sys.argv
-    asyncio.run(run_migrations(seed_only=seed_only))
+    dry_run = "--dry-run" in sys.argv
+    asyncio.run(
+        run_migrations(
+            schema_only=schema_only,
+            seed_only=seed_only,
+            dry_run=dry_run,
+        )
+    )
