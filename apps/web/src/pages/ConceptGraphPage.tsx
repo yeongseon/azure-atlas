@@ -4,12 +4,19 @@ import CytoscapeGraph from '../components/CytoscapeGraph'
 import EvidencePanel from '../components/EvidencePanel'
 import { useDomain, useSubgraph } from '../hooks/useAtlas'
 
+const RELATION_TYPES = [
+  'contains', 'depends_on', 'communicates_with', 'authenticates',
+  'derives_from', 'implements', 'manages', 'monitors',
+  'optimizes', 'secures', 'connects_to', 'stores',
+]
+
 const s: Record<string, React.CSSProperties> = {
   page: { display: 'flex', flexDirection: 'column', height: 'calc(100vh - 54px)' },
   toolbarContainer: {
     flexShrink: 0,
     background: 'var(--surface-1)',
     position: 'relative',
+    zIndex: 10,
   },
   toolbar: {
     display: 'flex',
@@ -77,6 +84,55 @@ const s: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
   },
+  filterContainer: { position: 'relative' },
+  filterBtn: {
+    background: 'var(--surface-0)',
+    border: '1px solid var(--border)',
+    borderRadius: '100px',
+    color: 'var(--text-primary)',
+    padding: '6px 16px',
+    fontSize: '0.85rem',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'background var(--transition)',
+  },
+  filterDropdown: {
+    position: 'absolute',
+    top: 'calc(100% + 8px)',
+    right: 0,
+    background: 'var(--surface-0)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    padding: '12px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    width: '320px',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    zIndex: 100,
+  },
+  filterPill: {
+    background: 'var(--surface-1)',
+    border: '1px solid var(--border)',
+    borderRadius: '100px',
+    padding: '4px 12px',
+    fontSize: '0.75rem',
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    transition: 'all var(--transition)',
+  },
+  filterPillActive: {
+    background: 'var(--brand)',
+    border: '1px solid var(--brand)',
+    color: '#fff',
+    borderRadius: '100px',
+    padding: '4px 12px',
+    fontSize: '0.75rem',
+    cursor: 'pointer',
+    transition: 'all var(--transition)',
+  },
   body: { flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' },
   graphContainer: { flex: 1, position: 'relative' },
 }
@@ -93,6 +149,18 @@ export default function ConceptGraphPage() {
   const navigate = useNavigate()
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(nodeId || null)
   const [depth, setDepth] = useState(1)
+  const [relationFilter, setRelationFilter] = useState<string[]>([])
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isFilterOpen) return
+    const handleClick = (e: MouseEvent) => {
+      const el = e.target as HTMLElement
+      if (!el.closest('.filter-container-ref')) setIsFilterOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [isFilterOpen])
 
   useEffect(() => {
     setSelectedNodeId(nodeId || null)
@@ -111,7 +179,7 @@ export default function ConceptGraphPage() {
     data: subgraphData,
     isLoading: subgraphLoading,
     error: subgraphError,
-  } = useSubgraph(nodeId ?? '', depth)
+  } = useSubgraph(nodeId ?? '', depth, relationFilter.length > 0 ? relationFilter : undefined)
 
   const handleNodeClick = useCallback((id: string) => {
     setSelectedNodeId(id)
@@ -191,19 +259,54 @@ export default function ConceptGraphPage() {
             </div>
 
             {isNodeView && (
-              <div style={s.depthControl}>
-                <span style={s.depthLabel}>Depth</span>
-                {[1, 2, 3].map((d) => (
+              <>
+                <div style={s.depthControl}>
+                  <span style={s.depthLabel}>Depth</span>
+                  {[1, 2, 3].map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      style={d === depth ? s.depthBtnActive : s.depthBtn}
+                      onClick={() => setDepth(d)}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                </div>
+
+                <div style={s.filterContainer} className="filter-container-ref">
                   <button
-                    key={d}
                     type="button"
-                    style={d === depth ? s.depthBtnActive : s.depthBtn}
-                    onClick={() => setDepth(d)}
+                    style={s.filterBtn}
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
                   >
-                    {d}
+                    Relations {relationFilter.length > 0 ? `(${relationFilter.length})` : ''} ▼
                   </button>
-                ))}
-              </div>
+                  {isFilterOpen && (
+                    <div style={s.filterDropdown}>
+                      {RELATION_TYPES.map((type) => {
+                        const isActive = relationFilter.includes(type)
+                        return (
+                          <button
+                            key={type}
+                            type="button"
+                            style={isActive ? s.filterPillActive : s.filterPill}
+                            onClick={() => {
+                              if (isActive) {
+                                setRelationFilter((prev) => prev.filter((t) => t !== type))
+                              } else {
+                                setRelationFilter((prev) => [...prev, type])
+                              }
+                            }}
+                          >
+                            {type.replace(/_/g, ' ')}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>

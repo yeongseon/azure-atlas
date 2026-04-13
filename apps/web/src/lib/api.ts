@@ -85,12 +85,20 @@ export const api = {
   listDomains: () => apiFetch<{ domains: DomainSummary[] }>('/domains'),
   getDomain: (id: string) => apiFetch<DomainDetail>(`/domains/${id}`),
   getNode: (id: string) => apiFetch<NodeDetail>(`/nodes/${id}`),
-  getSubgraph: (id: string, depth = 1) =>
-    apiFetch<SubgraphResponse>(`/nodes/${id}/subgraph?depth=${depth}`),
+  getSubgraph: (id: string, depth = 1, relationTypes?: string[]) => {
+    const params = new URLSearchParams({ depth: String(depth) })
+    if (relationTypes?.length) {
+      relationTypes.forEach(t => { params.append('relation_types', t) })
+    }
+    return apiFetch<SubgraphResponse>(`/nodes/${id}/subgraph?${params}`)
+  },
   getEvidence: (id: string) =>
     apiFetch<{ node_id: string; evidence: EvidenceItem[] }>(`/nodes/${id}/evidence`),
-  search: (q: string, limit = 20) =>
-    apiFetch<SearchResponse>(`/search?q=${encodeURIComponent(q)}&limit=${limit}`),
+  search: (q: string, limit = 20, nodeType?: string) => {
+    const params = new URLSearchParams({ q, limit: String(limit) })
+    if (nodeType) params.set('node_type', nodeType)
+    return apiFetch<SearchResponse>(`/search?${params}`)
+  },
   listJourneys: () => apiFetch<{ journeys: JourneySummary[] }>('/journeys'),
   getJourney: (id: string) => apiFetch<JourneyDetail>(`/journeys/${id}`),
 }

@@ -61,20 +61,50 @@ const s: Record<string, React.CSSProperties> = {
   heroText: {
     fontSize: '1.25rem',
     fontWeight: 500,
-  }
+  },
+  filterRow: { display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center' },
+  filterChip: {
+    padding: '0.5rem 1rem',
+    borderRadius: '100px',
+    border: '1px solid var(--border)',
+    background: 'var(--surface-0)',
+    color: 'var(--text-secondary)',
+    fontSize: '0.85rem',
+    cursor: 'pointer',
+    transition: 'all var(--transition)'
+  },
+  filterChipActive: {
+    padding: '0.5rem 1rem',
+    borderRadius: '100px',
+    border: '1px solid var(--brand)',
+    background: 'var(--brand)',
+    color: '#fff',
+    fontSize: '0.85rem',
+    cursor: 'pointer',
+    transition: 'all var(--transition)'
+  },
 }
+
+const NODE_TYPES = [
+  { label: 'All', value: '' },
+  { label: 'Service', value: 'service' },
+  { label: 'Concept', value: 'concept' },
+  { label: 'Feature', value: 'feature' },
+  { label: 'Pattern', value: 'pattern' },
+]
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const q = searchParams.get('q') ?? ''
   const [input, setInput] = useState(q)
   const [isFocused, setIsFocused] = useState(false)
+  const [nodeType, setNodeType] = useState<string>('')
 
   useEffect(() => {
     setInput(q)
   }, [q])
 
-  const { data, isLoading, error } = useSearch(q)
+  const { data, isLoading, error } = useSearch(q, 20, nodeType || undefined)
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -126,6 +156,21 @@ export default function SearchPage() {
           Search
         </button>
       </form>
+
+      {q && (
+        <div style={s.filterRow}>
+          {NODE_TYPES.map((type) => (
+            <button
+              key={type.value}
+              type="button"
+              style={nodeType === type.value ? s.filterChipActive : s.filterChip}
+              onClick={() => setNodeType(type.value)}
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {!q && !isLoading && (
         <div style={s.heroContainer}>

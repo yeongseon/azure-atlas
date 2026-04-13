@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { useEvidence, useNode } from '../hooks/useAtlas'
 
 interface Props {
@@ -45,6 +46,14 @@ const s: Record<string, React.CSSProperties> = {
     lineHeight: 1.5,
     borderBottom: '1px solid var(--surface-0)',
     background: 'var(--surface-1)',
+  },
+  detailMdStyles: {
+    background: 'var(--surface-1)',
+    padding: '1rem 1.25rem',
+    fontSize: '0.88rem',
+    borderBottom: '1px solid var(--surface-0)',
+    color: 'var(--text-primary)',
+    lineHeight: 1.6,
   },
   evidenceSection: { 
     flex: 1, 
@@ -176,6 +185,33 @@ export default function EvidencePanel({ nodeId, onClose }: Props) {
       </div>
 
       {node?.summary && <p style={s.summary}>{node.summary}</p>}
+
+      {node?.detail_md && (
+        <div style={s.detailMdStyles} className="markdown-content">
+          {/* eslint-disable @typescript-eslint/no-unused-vars */}
+          <ReactMarkdown
+            components={{
+              h1: ({node, ...props}) => <h1 style={{fontSize: '1.2rem', marginTop: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)'}} {...props} />,
+              h2: ({node, ...props}) => <h2 style={{fontSize: '1.1rem', marginTop: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)'}} {...props} />,
+              h3: ({node, ...props}) => <h3 style={{fontSize: '1rem', marginTop: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)'}} {...props} />,
+              p: ({node, ...props}) => <p style={{marginBottom: '0.75rem', color: 'var(--text-primary)'}} {...props} />,
+              a: ({node, ...props}) => <a style={{color: 'var(--brand)', textDecoration: 'none'}} {...props} />,
+              code: ({node, className, children, ...props}) => {
+                const isInline = !className
+                return isInline 
+                  ? <code style={{background: 'var(--surface-2)', padding: '2px 4px', borderRadius: '4px', fontSize: '0.8em', color: 'var(--accent-purple)'}} {...props}>{children}</code>
+                  : <code style={{display: 'block', background: 'var(--surface-0)', padding: '0.75rem', borderRadius: '6px', overflowX: 'auto', fontSize: '0.8em', marginBottom: '0.75rem', color: 'var(--text-primary)'}} className={className} {...props}>{children}</code>
+              },
+              ul: ({node, ...props}) => <ul style={{paddingLeft: '1.5rem', marginBottom: '0.75rem', color: 'var(--text-primary)'}} {...props} />,
+              ol: ({node, ...props}) => <ol style={{paddingLeft: '1.5rem', marginBottom: '0.75rem', color: 'var(--text-primary)'}} {...props} />,
+              li: ({node, ...props}) => <li style={{marginBottom: '0.25rem'}} {...props} />
+            }}
+          >
+            {node.detail_md}
+          </ReactMarkdown>
+          {/* eslint-enable @typescript-eslint/no-unused-vars */}
+        </div>
+      )}
 
       <div style={s.evidenceSection}>
         <div style={s.evidenceTitle}>Evidence ({evidence.length})</div>

@@ -25,10 +25,10 @@ export function useNode(id: string) {
   })
 }
 
-export function useSubgraph(id: string, depth = 1) {
+export function useSubgraph(id: string, depth = 1, relationTypes?: string[]) {
   return useQuery({
-    queryKey: queryKeys.subgraph(id, depth),
-    queryFn: () => api.getSubgraph(id, depth),
+    queryKey: queryKeys.subgraph(id, depth, relationTypes),
+    queryFn: () => api.getSubgraph(id, depth, relationTypes),
     enabled: !!id,
   })
 }
@@ -41,10 +41,10 @@ export function useEvidence(id: string) {
   })
 }
 
-export function useSearch(q: string, limit = 20) {
+export function useSearch(q: string, limit = 20, nodeType?: string) {
   return useQuery({
-    queryKey: queryKeys.search(q, limit),
-    queryFn: () => api.search(q, limit),
+    queryKey: queryKeys.search(q, limit, nodeType),
+    queryFn: () => api.search(q, limit, nodeType),
     enabled: q.trim().length > 0,
   })
 }
