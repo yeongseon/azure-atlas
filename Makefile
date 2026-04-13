@@ -78,8 +78,8 @@ smoke: ## Quick health check against running services
 
 # ── Quality ─────────────────────────────────────────────────
 test-api:
-	docker build --target test -t azure-atlas-api-test apps/api && \
-	docker run --rm \
+	podman build --target test -t azure-atlas-api-test apps/api && \
+	podman run --rm \
 	  -e DATABASE_URL=postgresql://test:test@db:5432/test \
 	  -e REDIS_URL=redis://redis:6379 \
 	  -e ENVIRONMENT=test \
