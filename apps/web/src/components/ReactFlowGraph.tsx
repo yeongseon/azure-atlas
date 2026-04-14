@@ -48,6 +48,11 @@ interface Props {
 	domainColors?: Record<string, string>;
 }
 
+const MARKER_COLORS = {
+	light: { edge: "#cbd5e1", selected: "#3b82f6" },
+	dark: { edge: "#334155", selected: "#60a5fa" },
+} as const;
+
 const NODE_COLORS: Record<string, string> = {
 	service: "#3b82f6",
 	concept: "#8b5cf6",
@@ -401,59 +406,57 @@ export default function ReactFlowGraph({
 		});
 	}, [domainColors, edges, neighborMap, nodes, selectedNodeId]);
 
-	const flowEdges = useMemo<Edge[]>(
-		() =>
-			edges.map((edge) => {
-				const isSelected =
-					selectedNodeId !== null &&
-					(edge.source_id === selectedNodeId ||
-						edge.target_id === selectedNodeId);
-				const isDimmed = selectedNodeId !== null && !isSelected;
+	const flowEdges = useMemo<Edge[]>(() => {
+		const mc = MARKER_COLORS[colorMode];
 
-				return {
-					id: edge.edge_id,
-					source: edge.source_id,
-					target: edge.target_id,
-					animated: true,
-					label: edge.relation_type,
-					markerEnd: {
-						type: MarkerType.ArrowClosed,
-						width: 18,
-						height: 18,
-						color: isSelected
-							? "var(--graph-edge-selected)"
-							: "var(--graph-edge-color)",
-					},
-					style: {
-						stroke: isSelected
-							? "var(--graph-edge-selected)"
-							: "var(--graph-edge-color)",
-						strokeWidth: isSelected ? 2.5 : 1.6,
-						opacity: isDimmed ? 0.2 : 1,
-					},
-					labelStyle: {
-						fill: isSelected
-							? "var(--graph-edge-label-selected-text)"
-							: "var(--graph-edge-label-text)",
-						fontSize: 11,
-						fontWeight: 600,
-					},
-					labelBgStyle: {
-						fill: "var(--graph-edge-label-bg)",
-						stroke: isSelected
-							? "var(--graph-edge-selected)"
-							: "var(--graph-edge-color)",
-						strokeWidth: 1,
-						fillOpacity: isSelected ? 0.94 : 0.86,
-						rx: 6,
-						ry: 6,
-					},
-					labelBgPadding: [6, 3],
-					labelBgBorderRadius: 6,
-				};
-			}),
-		[edges, selectedNodeId],
-	);
+		return edges.map((edge) => {
+			const isSelected =
+				selectedNodeId !== null &&
+				(edge.source_id === selectedNodeId ||
+					edge.target_id === selectedNodeId);
+			const isDimmed = selectedNodeId !== null && !isSelected;
+
+			return {
+				id: edge.edge_id,
+				source: edge.source_id,
+				target: edge.target_id,
+				animated: true,
+				label: edge.relation_type,
+				markerEnd: {
+					type: MarkerType.ArrowClosed,
+					width: 18,
+					height: 18,
+					color: isSelected ? mc.selected : mc.edge,
+				},
+				style: {
+					stroke: isSelected
+						? "var(--graph-edge-selected)"
+						: "var(--graph-edge-color)",
+					strokeWidth: isSelected ? 2.5 : 1.6,
+					opacity: isDimmed ? 0.2 : 1,
+				},
+				labelStyle: {
+					fill: isSelected
+						? "var(--graph-edge-label-selected-text)"
+						: "var(--graph-edge-label-text)",
+					fontSize: 11,
+					fontWeight: 600,
+				},
+				labelBgStyle: {
+					fill: "var(--graph-edge-label-bg)",
+					stroke: isSelected
+						? "var(--graph-edge-selected)"
+						: "var(--graph-edge-color)",
+					strokeWidth: 1,
+					fillOpacity: isSelected ? 0.94 : 0.86,
+					rx: 6,
+					ry: 6,
+				},
+				labelBgPadding: [6, 3],
+				labelBgBorderRadius: 6,
+			};
+		});
+	}, [colorMode, edges, selectedNodeId]);
 
 	useEffect(() => {
 		if (!flowRef.current || flowNodes.length === 0) return;
