@@ -1,9 +1,11 @@
 # Azure Atlas
 
 ![CI](https://github.com/yeongseon/azure-atlas/actions/workflows/ci.yml/badge.svg)
-[![Docs](https://github.com/yeongseon/azure-atlas/actions/workflows/docs.yml/badge.svg)](https://yeongseon.github.io/azure-atlas)
+[![Pages](https://github.com/yeongseon/azure-atlas/actions/workflows/pages.yml/badge.svg)](https://yeongseon.github.io/azure-atlas)
 
 > Explore Azure as a knowledge map.
+
+**[Live Demo](https://yeongseon.github.io/azure-atlas)** · **[Documentation](https://yeongseon.github.io/azure-atlas/docs/)**
 
 An ontology-based knowledge map of Azure, built on official MS Learn documentation. Explore Azure through **concept nodes + relationship edges + evidence links** instead of flat search results.
 
@@ -97,7 +99,7 @@ pnpm typecheck  # Typecheck web app
 
 ## Documentation
 
-Full documentation is available at **[yeongseon.github.io/azure-atlas](https://yeongseon.github.io/azure-atlas)**.
+Full documentation is available at **[yeongseon.github.io/azure-atlas/docs](https://yeongseon.github.io/azure-atlas/docs/)**.
 
 ## Contributing
 
