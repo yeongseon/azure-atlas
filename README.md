@@ -1,6 +1,6 @@
 # Azure Atlas
 
-![CI](https://github.com/{owner}/{repo}/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/yeongseon/azure-atlas/actions/workflows/ci.yml/badge.svg)
 
 > Explore Azure as a knowledge map.
 
@@ -11,9 +11,9 @@ An ontology-based knowledge map of Azure, built on official MS Learn documentati
 - **API**: Python 3.12 + FastAPI + asyncpg
 - **DB**: PostgreSQL 16
 - **Search**: PostgreSQL FTS (pg_trgm)
-- **Frontend**: React 18 + Vite + TypeScript + Cytoscape.js + TanStack Query
-- **Worker**: ARQ (async Redis Queue)
-- **Cache**: Redis
+- **Frontend**: React 18 + Vite + TypeScript + React Flow (@xyflow/react) + TanStack Query
+- **Worker**: ARQ (async Redis Queue) — *stub, not yet wired*
+- **Cache**: Redis — *used by ARQ; not required for core functionality*
 
 ## Structure
 
@@ -30,10 +30,10 @@ azure-atlas/
 
 The project follows a standard multi-tier architecture:
 
-- **Frontend**: React SPA using Cytoscape.js for graph visualization.
-- **API**: FastAPI providing RESTful endpoints and managing background tasks.
+- **Frontend**: React SPA using React Flow for graph visualization.
+- **API**: FastAPI providing RESTful endpoints.
 - **Database**: PostgreSQL with FTS (pg_trgm) for full-text search and relational data.
-- **Cache/Queue**: Redis for state management and ARQ background workers.
+- **Cache/Queue**: Redis + ARQ for background workers — *stub, not yet active*.
 
 Data Flow: Browser (React SPA) → API (FastAPI) → Database (PostgreSQL)
 

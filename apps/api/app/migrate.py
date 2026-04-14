@@ -36,7 +36,9 @@ async def _ensure_table(conn: asyncpg.Connection) -> None:
     await conn.execute(MIGRATIONS_TABLE_UPGRADE)
 
 
-async def _run_schema(conn: asyncpg.Connection, *, dry_run: bool = False) -> None:
+async def _run_schema(
+    conn: asyncpg.Connection, *, dry_run: bool = False, strict: bool = False
+) -> None:
     sql_files = sorted(MIGRATIONS_DIR.glob("*.sql"))
     if not sql_files:
         print("No schema migrations found.")
@@ -51,7 +53,10 @@ async def _run_schema(conn: asyncpg.Connection, *, dry_run: bool = False) -> Non
 
         if row is not None:
             if row["checksum"] and row["checksum"] != checksum:
-                print(f"WARNING: {sql_file.name} has changed since last applied")
+                msg = f"CHECKSUM MISMATCH: {sql_file.name} has changed since last applied"
+                if strict:
+                    raise RuntimeError(msg)
+                print(f"WARNING: {msg}")
             print(f"skip {sql_file.name} (already applied)")
             continue
 
@@ -69,7 +74,9 @@ async def _run_schema(conn: asyncpg.Connection, *, dry_run: bool = False) -> Non
         print(f"applied {sql_file.name}")
 
 
-async def _run_seeds(conn: asyncpg.Connection, *, dry_run: bool = False) -> None:
+async def _run_seeds(
+    conn: asyncpg.Connection, *, dry_run: bool = False, strict: bool = False
+) -> None:
     seed_files = sorted(ONTOLOGY_DIR.glob("seed_*.sql"))
     if not seed_files:
         print("No seed files found.")
@@ -84,7 +91,10 @@ async def _run_seeds(conn: asyncpg.Connection, *, dry_run: bool = False) -> None
 
         if row is not None:
             if row["checksum"] and row["checksum"] != checksum:
-                print(f"WARNING: {seed_file.name} has changed since last applied")
+                msg = f"CHECKSUM MISMATCH: {seed_file.name} has changed since last applied"
+                if strict:
+                    raise RuntimeError(msg)
+                print(f"WARNING: {msg}")
             print(f"skip {seed_file.name} (already applied)")
             continue
 
@@ -103,7 +113,11 @@ async def _run_seeds(conn: asyncpg.Connection, *, dry_run: bool = False) -> None
 
 
 async def run_migrations(
-    *, schema_only: bool = False, seed_only: bool = False, dry_run: bool = False
+    *,
+    schema_only: bool = False,
+    seed_only: bool = False,
+    dry_run: bool = False,
+    strict: bool = False,
 ) -> None:
     db_url = os.environ["DATABASE_URL"]
     conn = await asyncpg.connect(db_url)
@@ -111,12 +125,12 @@ async def run_migrations(
         await _ensure_table(conn)
 
         if seed_only:
-            await _run_seeds(conn, dry_run=dry_run)
+            await _run_seeds(conn, dry_run=dry_run, strict=strict)
         elif schema_only:
-            await _run_schema(conn, dry_run=dry_run)
+            await _run_schema(conn, dry_run=dry_run, strict=strict)
         else:
-            await _run_schema(conn, dry_run=dry_run)
-            await _run_seeds(conn, dry_run=dry_run)
+            await _run_schema(conn, dry_run=dry_run, strict=strict)
+            await _run_seeds(conn, dry_run=dry_run, strict=strict)
     finally:
         await conn.close()
 
@@ -125,10 +139,12 @@ if __name__ == "__main__":
     schema_only = "--schema-only" in sys.argv
     seed_only = "--seed-only" in sys.argv
     dry_run = "--dry-run" in sys.argv
+    strict = "--strict" in sys.argv
     asyncio.run(
         run_migrations(
             schema_only=schema_only,
             seed_only=seed_only,
             dry_run=dry_run,
+            strict=strict,
         )
     )

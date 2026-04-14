@@ -5,9 +5,9 @@ import ReactFlowGraph from '../components/ReactFlowGraph'
 import { useDomain, useSubgraph } from '../hooks/useAtlas'
 
 const RELATION_TYPES = [
-  'contains', 'depends_on', 'communicates_with', 'authenticates',
-  'derives_from', 'implements', 'manages', 'monitors',
-  'optimizes', 'secures', 'connects_to', 'stores',
+  'belongs_to', 'contains', 'attached_to', 'depends_on',
+  'prerequisite_for', 'connects_to', 'routes_to', 'resolves_via',
+  'secures', 'monitors', 'alternative_to', 'related_to',
 ]
 
 const s: Record<string, React.CSSProperties> = {

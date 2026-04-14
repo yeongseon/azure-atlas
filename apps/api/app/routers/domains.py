@@ -53,7 +53,7 @@ async def get_domain(domain_id: str) -> DomainDetailResponse:
             FROM edges e
             JOIN nodes src ON src.node_id = e.source_id AND src.status = 'approved'
             JOIN nodes tgt ON tgt.node_id = e.target_id AND tgt.status = 'approved'
-            WHERE src.domain_id = $1 AND e.status = 'approved'
+            WHERE src.domain_id = $1 AND tgt.domain_id = $1 AND e.status = 'approved'
             """,
             domain_id,
         )
