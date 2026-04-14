@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTheme } from '../hooks/useTheme'
 
 const styles: Record<string, React.CSSProperties> = {
   nav: {
@@ -6,7 +7,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     height: '54px',
     padding: '0 2rem',
-    background: 'rgba(15, 23, 42, 0.9)',
+    background: 'var(--nav-bg)',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
     borderBottom: '1px solid var(--border)',
@@ -20,7 +21,7 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '0.5rem',
     fontWeight: 700,
     fontSize: '1.1rem',
-    color: '#fff',
+    color: 'var(--nav-text)',
     textDecoration: 'none',
     marginRight: '3rem',
   },
@@ -58,6 +59,20 @@ const styles: Record<string, React.CSSProperties> = {
     marginLeft: 'auto',
     alignItems: 'center',
   },
+  themeBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    borderRadius: 'var(--radius-sm)',
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    transition: 'all var(--transition)',
+    marginRight: '0.5rem',
+  },
   searchBtn: {
     display: 'flex',
     alignItems: 'center',
@@ -76,8 +91,10 @@ const styles: Record<string, React.CSSProperties> = {
 export default function Nav() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { theme, toggleTheme } = useTheme()
   
   const isHome = pathname === '/' || pathname.startsWith('/domains') || pathname.startsWith('/nodes')
+  const isGraph = pathname === '/graph'
   const isSearch = pathname.startsWith('/search')
   const isJourneys = pathname.startsWith('/journeys')
 
@@ -94,11 +111,36 @@ export default function Nav() {
       
       <div style={styles.links}>
         <Link to="/" style={isHome ? styles.activeLink : styles.link} aria-current={isHome ? 'page' : undefined}>Domains</Link>
+        <Link to="/graph" style={isGraph ? styles.activeLink : styles.link} aria-current={isGraph ? 'page' : undefined}>Graph</Link>
         <Link to="/search" style={isSearch ? styles.activeLink : styles.link} aria-current={isSearch ? 'page' : undefined}>Search</Link>
         <Link to="/journeys" style={isJourneys ? styles.activeLink : styles.link} aria-current={isJourneys ? 'page' : undefined}>Journeys</Link>
       </div>
 
       <div style={styles.actions}>
+        <button
+          type="button"
+          style={styles.themeBtn}
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          )}
+        </button>
         <button 
           type="button" 
           style={styles.searchBtn} 

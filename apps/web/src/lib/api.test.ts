@@ -130,6 +130,42 @@ describe('api.getJourney', () => {
   })
 })
 
+describe('api.getAllGraph', () => {
+  it('fetches unified graph from /graph endpoint', async () => {
+    const payload = {
+      nodes: [
+        { node_id: 'vnet', domain_id: 'network', label: 'VNet', node_type: 'service', summary: null, evidence_count: 3 },
+        { node_id: 'blob', domain_id: 'storage', label: 'Blob', node_type: 'service', summary: null, evidence_count: 5 },
+      ],
+      edges: [
+        { edge_id: 'e1', source_id: 'vnet', target_id: 'subnet', relation_type: 'contains', weight: 1 },
+        { edge_id: 'e-cross', source_id: 'vnet', target_id: 'vm-1', relation_type: 'attached_to', weight: 1 },
+      ],
+      domain_count: 2,
+      node_count: 2,
+    }
+    mockFetch.mockResolvedValueOnce(jsonResponse(payload))
+
+    const result = await api.getAllGraph()
+
+    expect(mockFetch).toHaveBeenCalledOnce()
+    const url: string = mockFetch.mock.calls[0][0]
+    expect(url).toContain('/graph')
+    expect(result.domain_count).toBe(2)
+    expect(result.node_count).toBe(2)
+    expect(result.nodes).toHaveLength(2)
+    expect(result.edges).toHaveLength(2)
+    expect(result.nodes.find(n => n.node_id === 'vnet')?.domain_id).toBe('network')
+    expect(result.nodes.find(n => n.node_id === 'blob')?.domain_id).toBe('storage')
+  })
+
+  it('rejects if graph endpoint fails', async () => {
+    mockFetch.mockResolvedValueOnce(new Response('Internal Server Error', { status: 500 }))
+
+    await expect(api.getAllGraph()).rejects.toThrow('API error 500')
+  })
+})
+
 describe('error handling', () => {
   it('throws on non-ok response', async () => {
     mockFetch.mockResolvedValueOnce(new Response('Not Found', { status: 404 }))

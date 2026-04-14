@@ -8,6 +8,7 @@ import type {
   NodeDetail,
   SearchResponse,
   SubgraphResponse,
+  UnifiedGraphResponse,
 } from './types'
 
 const BASE = import.meta.env.VITE_API_URL ?? '/api/v1'
@@ -22,6 +23,7 @@ export function createHttpClient(): ApiClient {
   return {
     listDomains: () => apiFetch<{ domains: DomainSummary[] }>('/domains'),
     getDomain: (id: string) => apiFetch<DomainDetail>(`/domains/${id}`),
+    getAllGraph: () => apiFetch<UnifiedGraphResponse>('/graph'),
     getNode: (id: string) => apiFetch<NodeDetail>(`/nodes/${id}`),
     getSubgraph: (id: string, depth = 1, relationTypes?: string[]) => {
       const params = new URLSearchParams({ depth: String(depth) })

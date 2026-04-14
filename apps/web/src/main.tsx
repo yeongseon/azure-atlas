@@ -16,6 +16,15 @@ const queryClient = new QueryClient({
   },
 })
 
+// Initialize theme before render to prevent flash
+;(function initTheme() {
+  const stored = localStorage.getItem('azure-atlas-theme')
+  const theme = stored === 'light' || stored === 'dark'
+    ? stored
+    : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  document.documentElement.setAttribute('data-theme', theme)
+})()
+
 const rootElement = document.getElementById('root')
 
 if (!rootElement) {

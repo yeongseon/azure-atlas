@@ -29,6 +29,7 @@ export interface GraphNode {
 	node_type: string;
 	summary?: string | null;
 	evidence_count?: number;
+	domain_id?: string;
 }
 
 export interface GraphEdge {
@@ -44,7 +45,13 @@ interface Props {
 	edges: GraphEdge[];
 	centerNodeId?: string;
 	onNodeClick?: (nodeId: string) => void;
+	domainColors?: Record<string, string>;
 }
+
+const MARKER_COLORS = {
+	light: { edge: "#cbd5e1", selected: "#3b82f6" },
+	dark: { edge: "#334155", selected: "#60a5fa" },
+} as const;
 
 const NODE_COLORS: Record<string, string> = {
 	service: "#3b82f6",
@@ -82,25 +89,25 @@ type AtlasFlowNode = Node<AtlasNodeData, "atlasNode">;
 const wrapperStyle: FlowCssVars = {
 	width: "100%",
 	height: "100%",
-	background: "#0f172a",
-	"--xy-background-color-default": "#0f172a",
-	"--xy-node-background-color-default": "#1e293b",
-	"--xy-node-border-default": "#334155",
-	"--xy-edge-stroke-default": "#334155",
-	"--xy-edge-stroke-selected-default": "#60a5fa",
-	"--xy-controls-button-background-color-default": "#1e293b",
-	"--xy-controls-button-background-color-hover-default": "#334155",
-	"--xy-controls-button-color-default": "#cbd5e1",
-	"--xy-controls-button-border-color-default": "#334155",
-	"--xy-minimap-background-color-default": "rgba(15, 23, 42, 0.92)",
-	"--xy-minimap-mask-background-color-default": "rgba(15, 23, 42, 0.76)",
+	background: "var(--graph-bg)",
+	"--xy-background-color-default": "var(--graph-bg)",
+	"--xy-node-background-color-default": "var(--surface-1)",
+	"--xy-node-border-default": "var(--border)",
+	"--xy-edge-stroke-default": "var(--graph-edge-color)",
+	"--xy-edge-stroke-selected-default": "var(--graph-edge-selected)",
+	"--xy-controls-button-background-color-default": "var(--graph-controls-bg)",
+	"--xy-controls-button-background-color-hover-default": "var(--graph-controls-hover)",
+	"--xy-controls-button-color-default": "var(--graph-controls-text)",
+	"--xy-controls-button-border-color-default": "var(--graph-controls-border)",
+	"--xy-minimap-background-color-default": "var(--graph-minimap-bg)",
+	"--xy-minimap-mask-background-color-default": "var(--graph-minimap-mask)",
 };
 
 const graphChrome = `
 .atlas-flow .react-flow__renderer,
 .atlas-flow .react-flow__pane,
 .atlas-flow .react-flow__viewport {
-	background: #0f172a;
+	background: var(--graph-bg);
 }
 
 .atlas-flow .react-flow__attribution {
@@ -108,17 +115,17 @@ const graphChrome = `
 }
 
 .atlas-flow .react-flow__controls {
-	border: 1px solid #334155;
+	border: 1px solid var(--graph-controls-border);
 	border-radius: 12px;
 	overflow: hidden;
-	box-shadow: 0 18px 40px rgba(15, 23, 42, 0.42);
+	box-shadow: 0 18px 40px var(--node-shadow-base);
 	backdrop-filter: blur(10px);
 }
 
 .atlas-flow .react-flow__controls button {
 	width: 32px;
 	height: 32px;
-	border-bottom: 1px solid #334155;
+	border-bottom: 1px solid var(--graph-controls-border);
 }
 
 .atlas-flow .react-flow__controls button:last-child {
@@ -126,15 +133,15 @@ const graphChrome = `
 }
 
 .atlas-flow .react-flow__minimap {
-	border: 1px solid #334155;
+	border: 1px solid var(--graph-controls-border);
 	border-radius: 12px;
 	overflow: hidden;
-	box-shadow: 0 18px 40px rgba(15, 23, 42, 0.42);
+	box-shadow: 0 18px 40px var(--node-shadow-base);
 }
 `;
 
 function AtlasNode({ data, selected }: NodeProps<AtlasFlowNode>) {
-	const borderColor = selected ? "#e2e8f0" : data.color;
+	const borderColor = selected ? "var(--node-label-color)" : data.color;
 	const badgeColor = data.color;
 
 	return (
@@ -151,12 +158,12 @@ function AtlasNode({ data, selected }: NodeProps<AtlasFlowNode>) {
 					padding: "14px 14px 12px",
 					borderRadius: 18,
 					border: `2px solid ${borderColor}`,
-					background: `linear-gradient(160deg, rgba(30,41,59,0.96) 0%, rgba(15,23,42,0.98) 100%)`,
+					background: `linear-gradient(160deg, var(--node-bg-gradient-start) 0%, var(--node-bg-gradient-end) 100%)`,
 					boxShadow: selected
-						? `0 0 0 1px rgba(255,255,255,0.08), 0 0 30px ${data.color}55, 0 16px 34px rgba(2, 6, 23, 0.62)`
+						? `0 0 0 1px rgba(255,255,255,0.08), 0 0 30px ${data.color}55, 0 16px 34px var(--node-shadow-selected)`
 						: data.isNeighbor
-							? `0 10px 28px rgba(2, 6, 23, 0.42)`
-							: "0 8px 24px rgba(2, 6, 23, 0.32)",
+							? `0 10px 28px var(--node-shadow-neighbor)`
+							: "0 8px 24px var(--node-shadow-base)",
 					opacity: data.isDimmed ? 0.25 : 1,
 					transform: selected ? "scale(1.03)" : "scale(1)",
 					transition:
@@ -174,7 +181,7 @@ function AtlasNode({ data, selected }: NodeProps<AtlasFlowNode>) {
 				>
 					<div
 						style={{
-							color: "#e2e8f0",
+							color: "var(--node-label-color)",
 							fontSize: 13,
 							fontWeight: 700,
 							lineHeight: 1.35,
@@ -192,9 +199,9 @@ function AtlasNode({ data, selected }: NodeProps<AtlasFlowNode>) {
 							borderRadius: 999,
 							display: "grid",
 							placeItems: "center",
-							background: "rgba(15, 23, 42, 0.9)",
-							border: "1px solid #334155",
-							color: "#cbd5e1",
+							background: "var(--node-badge-bg)",
+							border: "1px solid var(--node-badge-border)",
+							color: "var(--node-badge-text)",
 							fontSize: 12,
 							fontWeight: 700,
 							boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
@@ -240,7 +247,13 @@ function AtlasNode({ data, selected }: NodeProps<AtlasFlowNode>) {
 						/>
 						{data.nodeType}
 					</span>
-					<span style={{ color: "#94a3b8", fontSize: 11, fontWeight: 600 }}>
+					<span
+						style={{
+							color: "var(--node-evidence-label-color)",
+							fontSize: 11,
+							fontWeight: 600,
+						}}
+					>
 						Evidence links
 					</span>
 				</div>
@@ -261,6 +274,7 @@ const nodeTypes = {
 function getLayoutedNodes(
 	nodes: GraphNode[],
 	edges: GraphEdge[],
+	domainColors?: Record<string, string>,
 ): AtlasFlowNode[] {
 	const graph = new dagre.graphlib.Graph();
 	graph.setGraph({
@@ -284,7 +298,9 @@ function getLayoutedNodes(
 
 	return nodes.map((node) => {
 		const position = graph.node(node.node_id);
-		const color = NODE_COLORS[node.node_type] ?? NODE_COLORS.default;
+		const color = domainColors && node.domain_id
+			? (domainColors[node.domain_id] ?? NODE_COLORS.default)
+			: (NODE_COLORS[node.node_type] ?? NODE_COLORS.default);
 
 		return {
 			id: node.node_id,
@@ -313,6 +329,7 @@ export default function ReactFlowGraph({
 	edges,
 	centerNodeId,
 	onNodeClick,
+	domainColors,
 }: Props) {
 	const flowRef = useRef<ReactFlowInstance<AtlasFlowNode, Edge> | null>(null);
 	const wrapperRef = useRef<HTMLDivElement>(null);
@@ -320,10 +337,36 @@ export default function ReactFlowGraph({
 		centerNodeId ?? null,
 	);
 	const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+	const [colorMode, setColorMode] = useState<"light" | "dark">(() => {
+		if (typeof document === "undefined") {
+			return "dark";
+		}
+
+		return document.documentElement.getAttribute("data-theme") === "light"
+			? "light"
+			: "dark";
+	});
 
 	useEffect(() => {
 		setSelectedNodeId(centerNodeId ?? null);
 	}, [centerNodeId]);
+
+	useEffect(() => {
+		const root = document.documentElement;
+		const syncTheme = () => {
+			setColorMode(root.getAttribute("data-theme") === "light" ? "light" : "dark");
+		};
+
+		syncTheme();
+
+		const observer = new MutationObserver(syncTheme);
+		observer.observe(root, {
+			attributes: true,
+			attributeFilter: ["data-theme"],
+		});
+
+		return () => observer.disconnect();
+	}, []);
 
 	const neighborMap = useMemo(() => {
 		const map = new Map<string, Set<string>>();
@@ -345,7 +388,7 @@ export default function ReactFlowGraph({
 			? (neighborMap.get(selectedNodeId) ?? new Set<string>())
 			: null;
 
-		return getLayoutedNodes(nodes, edges).map((node) => {
+		return getLayoutedNodes(nodes, edges, domainColors).map((node) => {
 			const isSelected = node.id === selectedNodeId;
 			const isNeighbor = selectedNeighbors?.has(node.id) ?? false;
 			const isDimmed = selectedNodeId !== null && !isSelected && !isNeighbor;
@@ -361,53 +404,59 @@ export default function ReactFlowGraph({
 				},
 			};
 		});
-	}, [edges, neighborMap, nodes, selectedNodeId]);
+	}, [domainColors, edges, neighborMap, nodes, selectedNodeId]);
 
-	const flowEdges = useMemo<Edge[]>(
-		() =>
-			edges.map((edge) => {
-				const isSelected =
-					selectedNodeId !== null &&
-					(edge.source_id === selectedNodeId ||
-						edge.target_id === selectedNodeId);
-				const isDimmed = selectedNodeId !== null && !isSelected;
+	const flowEdges = useMemo<Edge[]>(() => {
+		const mc = MARKER_COLORS[colorMode];
 
-				return {
-					id: edge.edge_id,
-					source: edge.source_id,
-					target: edge.target_id,
-					animated: true,
-					label: edge.relation_type,
-					markerEnd: {
-						type: MarkerType.ArrowClosed,
-						width: 18,
-						height: 18,
-						color: isSelected ? "#60a5fa" : "#334155",
-					},
-					style: {
-						stroke: isSelected ? "#60a5fa" : "#334155",
-						strokeWidth: isSelected ? 2.5 : 1.6,
-						opacity: isDimmed ? 0.2 : 1,
-					},
-					labelStyle: {
-						fill: isSelected ? "#93c5fd" : "#cbd5e1",
-						fontSize: 11,
-						fontWeight: 600,
-					},
-					labelBgStyle: {
-						fill: "#1e293b",
-						stroke: isSelected ? "#60a5fa" : "#334155",
-						strokeWidth: 1,
-						fillOpacity: isSelected ? 0.94 : 0.86,
-						rx: 6,
-						ry: 6,
-					},
-					labelBgPadding: [6, 3],
-					labelBgBorderRadius: 6,
-				};
-			}),
-		[edges, selectedNodeId],
-	);
+		return edges.map((edge) => {
+			const isSelected =
+				selectedNodeId !== null &&
+				(edge.source_id === selectedNodeId ||
+					edge.target_id === selectedNodeId);
+			const isDimmed = selectedNodeId !== null && !isSelected;
+
+			return {
+				id: edge.edge_id,
+				source: edge.source_id,
+				target: edge.target_id,
+				animated: true,
+				label: edge.relation_type,
+				markerEnd: {
+					type: MarkerType.ArrowClosed,
+					width: 18,
+					height: 18,
+					color: isSelected ? mc.selected : mc.edge,
+				},
+				style: {
+					stroke: isSelected
+						? "var(--graph-edge-selected)"
+						: "var(--graph-edge-color)",
+					strokeWidth: isSelected ? 2.5 : 1.6,
+					opacity: isDimmed ? 0.2 : 1,
+				},
+				labelStyle: {
+					fill: isSelected
+						? "var(--graph-edge-label-selected-text)"
+						: "var(--graph-edge-label-text)",
+					fontSize: 11,
+					fontWeight: 600,
+				},
+				labelBgStyle: {
+					fill: "var(--graph-edge-label-bg)",
+					stroke: isSelected
+						? "var(--graph-edge-selected)"
+						: "var(--graph-edge-color)",
+					strokeWidth: 1,
+					fillOpacity: isSelected ? 0.94 : 0.86,
+					rx: 6,
+					ry: 6,
+				},
+				labelBgPadding: [6, 3],
+				labelBgBorderRadius: 6,
+			};
+		});
+	}, [colorMode, edges, selectedNodeId]);
 
 	useEffect(() => {
 		if (!flowRef.current || flowNodes.length === 0) return;
@@ -482,6 +531,7 @@ export default function ReactFlowGraph({
 				<ReactFlow
 					nodes={flowNodes}
 					edges={flowEdges}
+					colorMode={colorMode}
 					nodeTypes={nodeTypes}
 					onInit={(instance) => {
 						flowRef.current = instance;
@@ -511,11 +561,11 @@ export default function ReactFlowGraph({
 							const atlasNode = node as AtlasFlowNode;
 							return atlasNode.data.color;
 						}}
-						maskColor="rgba(15, 23, 42, 0.72)"
-						style={{ background: "rgba(15, 23, 42, 0.92)" }}
+						maskColor="var(--graph-minimap-mask)"
+						style={{ background: "var(--graph-minimap-bg)" }}
 					/>
 					<Controls showInteractive={false} position="top-right" />
-					<Background color="#1e293b" gap={28} size={1.1} />
+					<Background color="var(--graph-grid-color)" gap={28} size={1.1} />
 				</ReactFlow>
 			</div>
 
@@ -528,10 +578,10 @@ export default function ReactFlowGraph({
 						transform: "translate(-50%, -100%)",
 						padding: "8px 12px",
 						borderRadius: 8,
-						background: "rgba(15, 23, 42, 0.94)",
-						border: "1px solid #334155",
-						boxShadow: "0 14px 30px rgba(2, 6, 23, 0.52)",
-						color: "#e2e8f0",
+						background: "var(--tooltip-bg)",
+						border: "1px solid var(--tooltip-border)",
+						boxShadow: "0 14px 30px var(--node-shadow-selected)",
+						color: "var(--tooltip-text)",
 						fontSize: 12,
 						pointerEvents: "none",
 						zIndex: 20,
@@ -541,15 +591,19 @@ export default function ReactFlowGraph({
 					}}
 				>
 					<div style={{ fontSize: 13, fontWeight: 700 }}>{tooltip.label}</div>
-					<div style={{ color: "#94a3b8" }}>
+					<div style={{ color: "var(--tooltip-secondary)" }}>
 						Type{" "}
-						<span style={{ color: "#e2e8f0", textTransform: "capitalize" }}>
+						<span
+							style={{ color: "var(--tooltip-text)", textTransform: "capitalize" }}
+						>
 							{tooltip.type}
 						</span>
 					</div>
-					<div style={{ color: "#94a3b8" }}>
+					<div style={{ color: "var(--tooltip-secondary)" }}>
 						Evidence{" "}
-						<span style={{ color: "#e2e8f0" }}>{tooltip.evidenceCount}</span>
+						<span style={{ color: "var(--tooltip-text)" }}>
+							{tooltip.evidenceCount}
+						</span>
 					</div>
 				</div>
 			)}

@@ -1,6 +1,7 @@
 export const queryKeys = {
   domains: () => ['domains'] as const,
   domain: (id: string) => ['domain', id] as const,
+  allGraph: () => ['allGraph'] as const,
   node: (id: string) => ['node', id] as const,
   subgraph: (id: string, depth: number, relationTypes?: string[]) =>
     ['subgraph', id, depth, relationTypes ?? []] as const,

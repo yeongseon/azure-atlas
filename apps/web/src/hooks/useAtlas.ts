@@ -17,6 +17,13 @@ export function useDomain(id: string) {
   })
 }
 
+export function useAllGraph() {
+  return useQuery({
+    queryKey: queryKeys.allGraph(),
+    queryFn: () => api.getAllGraph(),
+  })
+}
+
 export function useNode(id: string) {
   return useQuery({
     queryKey: queryKeys.node(id),
