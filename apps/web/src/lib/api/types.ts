@@ -1,11 +1,3 @@
-const BASE = import.meta.env.VITE_API_URL ?? '/api/v1'
-
-async function apiFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`)
-  if (!res.ok) throw new Error(`API error ${res.status}: ${path}`)
-  return res.json() as Promise<T>
-}
-
 export interface NodePreview {
   node_id: string
   label: string
@@ -81,24 +73,13 @@ export interface JourneyDetail {
   steps: JourneyStep[]
 }
 
-export const api = {
-  listDomains: () => apiFetch<{ domains: DomainSummary[] }>('/domains'),
-  getDomain: (id: string) => apiFetch<DomainDetail>(`/domains/${id}`),
-  getNode: (id: string) => apiFetch<NodeDetail>(`/nodes/${id}`),
-  getSubgraph: (id: string, depth = 1, relationTypes?: string[]) => {
-    const params = new URLSearchParams({ depth: String(depth) })
-    if (relationTypes?.length) {
-      relationTypes.forEach(t => { params.append('relation_types', t) })
-    }
-    return apiFetch<SubgraphResponse>(`/nodes/${id}/subgraph?${params}`)
-  },
-  getEvidence: (id: string) =>
-    apiFetch<{ node_id: string; evidence: EvidenceItem[] }>(`/nodes/${id}/evidence`),
-  search: (q: string, limit = 20, nodeType?: string) => {
-    const params = new URLSearchParams({ q, limit: String(limit) })
-    if (nodeType) params.set('node_type', nodeType)
-    return apiFetch<SearchResponse>(`/search?${params}`)
-  },
-  listJourneys: () => apiFetch<{ journeys: JourneySummary[] }>('/journeys'),
-  getJourney: (id: string) => apiFetch<JourneyDetail>(`/journeys/${id}`),
+export interface ApiClient {
+  listDomains(): Promise<{ domains: DomainSummary[] }>
+  getDomain(id: string): Promise<DomainDetail>
+  getNode(id: string): Promise<NodeDetail>
+  getSubgraph(id: string, depth?: number, relationTypes?: string[]): Promise<SubgraphResponse>
+  getEvidence(id: string): Promise<{ node_id: string; evidence: EvidenceItem[] }>
+  search(q: string, limit?: number, nodeType?: string): Promise<SearchResponse>
+  listJourneys(): Promise<{ journeys: JourneySummary[] }>
+  getJourney(id: string): Promise<JourneyDetail>
 }
