@@ -1,4 +1,4 @@
-name: Demo
+name: Pages
 
 on:
   push:
@@ -7,7 +7,10 @@ on:
     paths:
       - 'apps/web/**'
       - 'packages/ontology/**'
-      - '.github/workflows/demo.yml'
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'requirements-docs.txt'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -28,8 +31,6 @@ jobs:
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.29.3
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -37,10 +38,15 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Install dependencies
+      - name: Install Node dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Export demo data
@@ -48,6 +54,15 @@ jobs:
 
       - name: Build demo app
         run: pnpm --filter azure-atlas-web build:demo
+
+      - name: Build docs
+        run: |
+          pip install -r requirements-docs.txt
+          mkdocs build --strict --site-dir site
+
+      - name: Merge demo + docs into single artifact
+        run: |
+          cp -r site apps/web/dist/docs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
