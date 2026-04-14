@@ -1,0 +1,92 @@
+site_name: Azure Atlas
+site_description: Explore Azure as a knowledge map — ontology-based navigation for MS Learn
+site_url: https://yeongseon.github.io/azure-atlas
+repo_url: https://github.com/yeongseon/azure-atlas
+repo_name: yeongseon/azure-atlas
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+    - scheme: default
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Inter
+    code: JetBrains Mono
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Quickstart: getting-started/quickstart.md
+    - Prerequisites: getting-started/prerequisites.md
+    - Configuration: getting-started/configuration.md
+  - Architecture:
+    - Overview: architecture/overview.md
+    - API Reference: architecture/api.md
+    - Database Schema: architecture/database.md
+    - Frontend: architecture/frontend.md
+  - Ontology:
+    - Overview: ontology/overview.md
+    - Domains: ontology/domains.md
+    - Seed Data: ontology/seed-data.md
+  - Development:
+    - Setup: development/setup.md
+    - Testing: development/testing.md
+    - CI/CD: development/ci-cd.md
+  - Contributing: contributing.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/yeongseon/azure-atlas

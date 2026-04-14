@@ -36,3 +36,7 @@ vite.svg
 uv.lock
 tsconfig.tsbuildinfo
 apps/web/tsconfig.tsbuildinfo
+site/
+
+# Sisyphus agent state
+.sisyphus/

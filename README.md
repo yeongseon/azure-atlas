@@ -1,6 +1,7 @@
 # Azure Atlas
 
 ![CI](https://github.com/yeongseon/azure-atlas/actions/workflows/ci.yml/badge.svg)
+[![Docs](https://github.com/yeongseon/azure-atlas/actions/workflows/docs.yml/badge.svg)](https://yeongseon.github.io/azure-atlas)
 
 > Explore Azure as a knowledge map.
 
@@ -93,6 +94,10 @@ pnpm typecheck  # Typecheck web app
   - **Compute** (48 nodes, VM-centric) — Virtual Machine, VMSS, Availability Sets/Zones, Trusted Launch, Disk Encryption, Autoscale, Backup, Site Recovery, and more
 - **Views**: Concept Graph + Evidence Panel + Search
 - **Journeys**: 25 curated scenarios across 3 domains
+
+## Documentation
+
+Full documentation is available at **[yeongseon.github.io/azure-atlas](https://yeongseon.github.io/azure-atlas)**.
 
 ## Contributing
 
