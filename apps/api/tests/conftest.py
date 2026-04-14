@@ -32,6 +32,25 @@ def _build_mock_pool(*, missing_rows: bool = False) -> MagicMock:
                     "display_order": 1,
                 }
             ]
+        if "GROUP BY n.node_id" in query:
+            return [
+                {
+                    "node_id": "vnet",
+                    "domain_id": "network",
+                    "label": "Virtual Network",
+                    "node_type": "service",
+                    "summary": "Isolated Azure network",
+                    "evidence_count": 2,
+                },
+                {
+                    "node_id": "vm-1",
+                    "domain_id": "compute",
+                    "label": "Virtual Machine",
+                    "node_type": "service",
+                    "summary": "Azure VM",
+                    "evidence_count": 1,
+                },
+            ]
         if "WHERE domain_id = $1 AND status = 'approved'" in query and "FROM nodes" in query:
             return [
                 {
@@ -40,6 +59,23 @@ def _build_mock_pool(*, missing_rows: bool = False) -> MagicMock:
                     "node_type": "service",
                     "summary": "Isolated Azure network",
                 }
+            ]
+        if "FROM edges e" in query and "JOIN nodes src" in query and "domain_id" not in query:
+            return [
+                {
+                    "edge_id": "edge-1",
+                    "source_id": "vnet",
+                    "target_id": "subnet",
+                    "relation_type": "contains",
+                    "weight": 1.0,
+                },
+                {
+                    "edge_id": "edge-cross-1",
+                    "source_id": "vnet",
+                    "target_id": "vm-1",
+                    "relation_type": "attached_to",
+                    "weight": 1.0,
+                },
             ]
         if "FROM edges e" in query and "JOIN nodes src" in query:
             return [
@@ -167,6 +203,8 @@ def _build_mock_pool(*, missing_rows: bool = False) -> MagicMock:
     async def fetchval_side_effect(query: str, *args):
         if query == "SELECT 1":
             return 1
+        if "COUNT(*)" in query and "FROM domains" in query:
+            return 2
         if "SELECT 1 FROM nodes WHERE node_id = $1" in query:
             return None if missing_rows else 1
         if "SELECT filename FROM schema_migrations" in query:
@@ -198,6 +236,7 @@ async def _make_client(mock_pool: MagicMock) -> AsyncIterator[AsyncClient]:
         patch("app.db.get_pool", return_value=mock_pool),
         patch("app.routers.domains.get_pool", return_value=mock_pool),
         patch("app.routers.nodes.get_pool", return_value=mock_pool),
+        patch("app.routers.graph.get_pool", return_value=mock_pool),
         patch("app.routers.search.get_pool", return_value=mock_pool),
         patch("app.routers.journeys.get_pool", return_value=mock_pool),
         patch("app.routers.events.get_pool", return_value=mock_pool),

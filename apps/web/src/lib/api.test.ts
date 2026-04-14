@@ -131,41 +131,26 @@ describe('api.getJourney', () => {
 })
 
 describe('api.getAllGraph', () => {
-  it('fetches all domains and merges nodes with domain_id and edges', async () => {
-    const domainsPayload = {
-      domains: [
-        { domain_id: 'network', label: 'Network', description: null, icon_url: null, display_order: 1 },
-        { domain_id: 'storage', label: 'Storage', description: null, icon_url: null, display_order: 2 },
-      ],
-    }
-    const networkPayload = {
-      domain: domainsPayload.domains[0],
+  it('fetches unified graph from /graph endpoint', async () => {
+    const payload = {
       nodes: [
-        { node_id: 'vnet', label: 'VNet', node_type: 'service', summary: null, evidence_count: 3 },
+        { node_id: 'vnet', domain_id: 'network', label: 'VNet', node_type: 'service', summary: null, evidence_count: 3 },
+        { node_id: 'blob', domain_id: 'storage', label: 'Blob', node_type: 'service', summary: null, evidence_count: 5 },
       ],
       edges: [
         { edge_id: 'e1', source_id: 'vnet', target_id: 'subnet', relation_type: 'contains', weight: 1 },
+        { edge_id: 'e-cross', source_id: 'vnet', target_id: 'vm-1', relation_type: 'attached_to', weight: 1 },
       ],
-      node_count: 1,
+      domain_count: 2,
+      node_count: 2,
     }
-    const storagePayload = {
-      domain: domainsPayload.domains[1],
-      nodes: [
-        { node_id: 'blob', label: 'Blob', node_type: 'service', summary: null, evidence_count: 5 },
-      ],
-      edges: [
-        { edge_id: 'e2', source_id: 'blob', target_id: 'sa', relation_type: 'belongs_to', weight: 1 },
-      ],
-      node_count: 1,
-    }
-
-    mockFetch
-      .mockResolvedValueOnce(jsonResponse(domainsPayload))
-      .mockResolvedValueOnce(jsonResponse(networkPayload))
-      .mockResolvedValueOnce(jsonResponse(storagePayload))
+    mockFetch.mockResolvedValueOnce(jsonResponse(payload))
 
     const result = await api.getAllGraph()
 
+    expect(mockFetch).toHaveBeenCalledOnce()
+    const url: string = mockFetch.mock.calls[0][0]
+    expect(url).toContain('/graph')
     expect(result.domain_count).toBe(2)
     expect(result.node_count).toBe(2)
     expect(result.nodes).toHaveLength(2)
@@ -174,16 +159,8 @@ describe('api.getAllGraph', () => {
     expect(result.nodes.find(n => n.node_id === 'blob')?.domain_id).toBe('storage')
   })
 
-  it('rejects if any domain fetch fails', async () => {
-    const domainsPayload = {
-      domains: [
-        { domain_id: 'network', label: 'Network', description: null, icon_url: null, display_order: 1 },
-      ],
-    }
-
-    mockFetch
-      .mockResolvedValueOnce(jsonResponse(domainsPayload))
-      .mockResolvedValueOnce(new Response('Internal Server Error', { status: 500 }))
+  it('rejects if graph endpoint fails', async () => {
+    mockFetch.mockResolvedValueOnce(new Response('Internal Server Error', { status: 500 }))
 
     await expect(api.getAllGraph()).rejects.toThrow('API error 500')
   })

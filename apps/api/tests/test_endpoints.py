@@ -23,6 +23,24 @@ async def test_meta(client):
 
 
 @pytest.mark.anyio
+async def test_get_graph(client):
+    response = await client.get("/api/v1/graph")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["domain_count"] == 2
+    assert body["node_count"] == 2
+    assert len(body["nodes"]) == 2
+    domain_ids = {n["domain_id"] for n in body["nodes"]}
+    assert "network" in domain_ids
+    assert "compute" in domain_ids
+    cross_edges = [
+        e for e in body["edges"] if e["source_id"] == "vnet" and e["target_id"] == "vm-1"
+    ]
+    assert len(cross_edges) == 1
+
+
+@pytest.mark.anyio
 async def test_get_domain(client):
     response = await client.get("/api/v1/domains/network")
 

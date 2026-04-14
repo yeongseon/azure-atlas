@@ -23,23 +23,7 @@ export function createHttpClient(): ApiClient {
   return {
     listDomains: () => apiFetch<{ domains: DomainSummary[] }>('/domains'),
     getDomain: (id: string) => apiFetch<DomainDetail>(`/domains/${id}`),
-    getAllGraph: async (): Promise<UnifiedGraphResponse> => {
-      const { domains } = await apiFetch<{ domains: DomainSummary[] }>('/domains')
-      const details = await Promise.all(
-        domains.map(domain => apiFetch<DomainDetail>(`/domains/${domain.domain_id}`)),
-      )
-      const nodes = details.flatMap(detail =>
-        detail.nodes.map(node => ({ ...node, domain_id: detail.domain.domain_id })),
-      )
-      const edges = details.flatMap(detail => detail.edges)
-
-      return {
-        nodes,
-        edges,
-        domain_count: domains.length,
-        node_count: nodes.length,
-      }
-    },
+    getAllGraph: () => apiFetch<UnifiedGraphResponse>('/graph'),
     getNode: (id: string) => apiFetch<NodeDetail>(`/nodes/${id}`),
     getSubgraph: (id: string, depth = 1, relationTypes?: string[]) => {
       const params = new URLSearchParams({ depth: String(depth) })

@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 
 from app import db
 from app.config import settings
-from app.routers import curation, domains, events, journeys, nodes, search
+from app.routers import curation, domains, events, graph, journeys, nodes, search
 
 API_V1_PREFIX = "/api/v1"
 
@@ -50,6 +50,7 @@ app.include_router(search.router, prefix=API_V1_PREFIX)
 app.include_router(journeys.router, prefix=API_V1_PREFIX)
 app.include_router(events.router, prefix=API_V1_PREFIX)
 app.include_router(curation.router, prefix=API_V1_PREFIX)
+app.include_router(graph.router, prefix=API_V1_PREFIX)
 
 
 @app.get("/health")
