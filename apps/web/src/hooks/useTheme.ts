@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -18,17 +18,19 @@ function getInitialTheme(): Theme {
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const isExplicitChoice = useRef(localStorage.getItem(STORAGE_KEY) !== null)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem(STORAGE_KEY, theme)
+    if (isExplicitChoice.current) {
+      localStorage.setItem(STORAGE_KEY, theme)
+    }
   }, [theme])
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = () => {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (!stored) {
+      if (!isExplicitChoice.current) {
         setTheme(mediaQuery.matches ? 'dark' : 'light')
       }
     }
@@ -37,6 +39,7 @@ export function useTheme() {
   }, [])
 
   const toggleTheme = useCallback(() => {
+    isExplicitChoice.current = true
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))
   }, [])
 

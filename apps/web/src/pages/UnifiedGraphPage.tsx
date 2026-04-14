@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import EvidencePanel from '../components/EvidencePanel'
 import ReactFlowGraph from '../components/ReactFlowGraph'
 import { useAllGraph, useDomains } from '../hooks/useAtlas'
@@ -60,15 +59,13 @@ const s: Record<string, React.CSSProperties> = {
 }
 
 export default function UnifiedGraphPage() {
-  const navigate = useNavigate()
   const { data, isLoading, error } = useAllGraph()
   const { data: domainsData } = useDomains()
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
 
   const handleNodeClick = useCallback((id: string) => {
     setSelectedNodeId(id)
-    navigate(`/nodes/${id}`)
-  }, [navigate])
+  }, [])
 
   if (isLoading) return <div className="loading">Loading unified graph…</div>
   if (error) return <div className="error">Failed to load graph data</div>
