@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "pnpm --filter azure-atlas-web dev",
     "build": "pnpm --filter azure-atlas-web build",
+    "build:demo": "node packages/ontology/scripts/export-demo-data.mjs && pnpm --filter azure-atlas-web build:demo",
+    "export-demo-data": "node packages/ontology/scripts/export-demo-data.mjs",
     "test": "pnpm --filter azure-atlas-web test",
     "lint": "pnpm --filter azure-atlas-web lint",
     "typecheck": "pnpm --filter azure-atlas-web typecheck"

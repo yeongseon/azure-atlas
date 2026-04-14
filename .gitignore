@@ -5,6 +5,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+!.env.demo
 dist/
 .DS_Store
 *.egg-info/
@@ -37,6 +38,9 @@ uv.lock
 tsconfig.tsbuildinfo
 apps/web/tsconfig.tsbuildinfo
 site/
+
+# Demo data (generated)
+apps/web/public/data/atlas.json
 
 # Sisyphus agent state
 .sisyphus/
