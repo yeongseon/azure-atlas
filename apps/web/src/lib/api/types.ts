@@ -39,6 +39,13 @@ export interface SubgraphResponse {
   edges: EdgeSummary[]
 }
 
+export interface UnifiedGraphResponse {
+  nodes: (NodePreview & { evidence_count: number; domain_id: string })[]
+  edges: EdgeSummary[]
+  domain_count: number
+  node_count: number
+}
+
 export interface EvidenceItem {
   evidence_id: string
   node_id: string
@@ -76,6 +83,7 @@ export interface JourneyDetail {
 export interface ApiClient {
   listDomains(): Promise<{ domains: DomainSummary[] }>
   getDomain(id: string): Promise<DomainDetail>
+  getAllGraph(): Promise<UnifiedGraphResponse>
   getNode(id: string): Promise<NodeDetail>
   getSubgraph(id: string, depth?: number, relationTypes?: string[]): Promise<SubgraphResponse>
   getEvidence(id: string): Promise<{ node_id: string; evidence: EvidenceItem[] }>

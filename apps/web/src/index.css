@@ -1,4 +1,62 @@
 :root {
+  --surface-0: #ffffff;
+  --surface-1: #f8fafc;
+  --surface-2: #e2e8f0;
+  --brand: #3b82f6;
+  --brand-hover: #2563eb;
+  --brand-dim: #1d4ed8;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --accent-purple: #8b5cf6;
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --transition: 0.15s ease;
+
+  --nav-bg: rgba(255, 255, 255, 0.9);
+  --nav-text: #0f172a;
+  --node-bg-gradient-start: rgba(248, 250, 252, 0.96);
+  --node-bg-gradient-end: rgba(255, 255, 255, 0.98);
+  --node-label-color: #0f172a;
+  --node-badge-bg: rgba(241, 245, 249, 0.9);
+  --node-badge-border: #e2e8f0;
+  --node-badge-text: #475569;
+  --node-evidence-label-color: #64748b;
+  --tooltip-bg: rgba(255, 255, 255, 0.96);
+  --tooltip-border: #e2e8f0;
+  --tooltip-text: #0f172a;
+  --tooltip-secondary: #64748b;
+  --graph-bg: #f8fafc;
+  --graph-edge-color: #cbd5e1;
+  --graph-edge-selected: #3b82f6;
+  --graph-edge-label-text: #475569;
+  --graph-edge-label-selected-text: #2563eb;
+  --graph-edge-label-bg: #f8fafc;
+  --graph-controls-bg: #ffffff;
+  --graph-controls-hover: #f1f5f9;
+  --graph-controls-text: #475569;
+  --graph-controls-border: #e2e8f0;
+  --graph-minimap-bg: rgba(248, 250, 252, 0.92);
+  --graph-minimap-mask: rgba(248, 250, 252, 0.76);
+  --graph-grid-color: #e2e8f0;
+  --node-shadow-base: rgba(0, 0, 0, 0.06);
+  --node-shadow-selected: rgba(0, 0, 0, 0.1);
+  --node-shadow-neighbor: rgba(0, 0, 0, 0.08);
+
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: var(--text-primary);
+  background-color: var(--surface-0);
+}
+
+[data-theme="dark"] {
   --surface-0: #0f172a;
   --surface-1: #1e293b;
   --surface-2: #334155;
@@ -13,17 +71,38 @@
   --accent-purple: #8b5cf6;
   --accent-green: #10b981;
   --accent-amber: #f59e0b;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --transition: 0.15s ease;
 
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --nav-bg: rgba(15, 23, 42, 0.9);
+  --nav-text: #fff;
+  --node-bg-gradient-start: rgba(30, 41, 59, 0.96);
+  --node-bg-gradient-end: rgba(15, 23, 42, 0.98);
+  --node-label-color: #e2e8f0;
+  --node-badge-bg: rgba(15, 23, 42, 0.9);
+  --node-badge-border: #334155;
+  --node-badge-text: #cbd5e1;
+  --node-evidence-label-color: #94a3b8;
+  --tooltip-bg: rgba(15, 23, 42, 0.94);
+  --tooltip-border: #334155;
+  --tooltip-text: #e2e8f0;
+  --tooltip-secondary: #94a3b8;
+  --graph-bg: #0f172a;
+  --graph-edge-color: #334155;
+  --graph-edge-selected: #60a5fa;
+  --graph-edge-label-text: #cbd5e1;
+  --graph-edge-label-selected-text: #93c5fd;
+  --graph-edge-label-bg: #1e293b;
+  --graph-controls-bg: #1e293b;
+  --graph-controls-hover: #334155;
+  --graph-controls-text: #cbd5e1;
+  --graph-controls-border: #334155;
+  --graph-minimap-bg: rgba(15, 23, 42, 0.92);
+  --graph-minimap-mask: rgba(15, 23, 42, 0.76);
+  --graph-grid-color: #1e293b;
+  --node-shadow-base: rgba(2, 6, 23, 0.32);
+  --node-shadow-selected: rgba(2, 6, 23, 0.62);
+  --node-shadow-neighbor: rgba(2, 6, 23, 0.42);
+
   color-scheme: dark;
-  color: var(--text-primary);
-  background-color: var(--surface-0);
 }
 
 * {

@@ -9,6 +9,7 @@ import type {
   NodeDetail,
   NodePreview,
   SearchResponse,
+  UnifiedGraphResponse,
 } from './types'
 
 function toNodePreview(dataset: LoadedAtlasDataset, nodeId: string): NodePreview & { evidence_count: number }
@@ -68,6 +69,24 @@ function buildDomainDetail(dataset: LoadedAtlasDataset, domainId: string): Domai
   }
 }
 
+function buildAllGraph(dataset: LoadedAtlasDataset): UnifiedGraphResponse {
+  const nodes = dataset.nodes.map(node => ({
+    node_id: node.node_id,
+    label: node.label,
+    node_type: node.node_type,
+    summary: node.summary,
+    evidence_count: dataset.evidenceCountByNodeId.get(node.node_id) ?? 0,
+    domain_id: node.domain_id,
+  }))
+
+  return {
+    nodes,
+    edges: dataset.edges,
+    domain_count: dataset.domains.length,
+    node_count: nodes.length,
+  }
+}
+
 function buildNodeDetail(dataset: LoadedAtlasDataset, nodeId: string): NodeDetail {
   const node = dataset.nodesById.get(nodeId)
   if (!node) throw new Error(`API error 404: /nodes/${nodeId}`)
@@ -114,6 +133,10 @@ export function createStaticClient(): ApiClient {
     async getDomain(id: string) {
       const dataset = await loadAtlasDataset()
       return buildDomainDetail(dataset, id)
+    },
+    async getAllGraph() {
+      const dataset = await loadAtlasDataset()
+      return buildAllGraph(dataset)
     },
     async getNode(id: string) {
       const dataset = await loadAtlasDataset()

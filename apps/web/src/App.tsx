@@ -4,6 +4,7 @@ import Nav from './components/Nav'
 import WorldMapPage from './pages/WorldMapPage'
 
 const ConceptGraphPage = lazy(() => import('./pages/ConceptGraphPage'))
+const UnifiedGraphPage = lazy(() => import('./pages/UnifiedGraphPage'))
 const SearchPage = lazy(() => import('./pages/SearchPage'))
 const JourneyPage = lazy(() => import('./pages/JourneyPage'))
 
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/journeys" element={<WorldMapPage />} />
             <Route path="/domains/:domainId" element={<ConceptGraphPage />} />
             <Route path="/nodes/:nodeId" element={<ConceptGraphPage />} />
+            <Route path="/graph" element={<UnifiedGraphPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/journeys/:journeyId" element={<JourneyPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
