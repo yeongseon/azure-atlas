@@ -54,4 +54,16 @@ async def create_decision(body: CurationDecisionRequest) -> CurationDecisionResp
                 if not updated:
                     raise HTTPException(status_code=404, detail="Evidence not found")
 
+            await conn.execute(
+                "INSERT INTO curation_decisions"
+                " (node_id, edge_id, evidence_id, decision, new_status, reviewer_note)"
+                " VALUES ($1, $2, $3::uuid, $4, $5, $6)",
+                body.node_id,
+                body.edge_id,
+                body.evidence_id,
+                body.decision,
+                new_status,
+                body.reviewer_note,
+            )
+
     return CurationDecisionResponse(ok=True)
