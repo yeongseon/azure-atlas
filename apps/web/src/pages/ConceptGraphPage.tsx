@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import CytoscapeGraph from '../components/CytoscapeGraph'
 import EvidencePanel from '../components/EvidencePanel'
+import ReactFlowGraph from '../components/ReactFlowGraph'
 import { useDomain, useSubgraph } from '../hooks/useAtlas'
 
 const RELATION_TYPES = [
@@ -318,7 +318,7 @@ export default function ConceptGraphPage() {
           {graphNodes.length === 0 ? (
             <div className="loading">No graph data available</div>
           ) : (
-            <CytoscapeGraph
+            <ReactFlowGraph
               nodes={graphNodes}
               edges={graphEdges}
               centerNodeId={centerId}
