@@ -339,7 +339,7 @@ export default function ReactFlowGraph({
 	const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 	const [colorMode, setColorMode] = useState<"light" | "dark">(() => {
 		if (typeof document === "undefined") {
-			return "dark";
+			return "light";
 		}
 
 		return document.documentElement.getAttribute("data-theme") === "light"
