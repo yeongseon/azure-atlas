@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
   const stored = localStorage.getItem('azure-atlas-theme')
   const theme = stored === 'light' || stored === 'dark'
     ? stored
-    : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    : 'light'
   document.documentElement.setAttribute('data-theme', theme)
 })()
 
