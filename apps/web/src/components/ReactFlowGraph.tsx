@@ -61,8 +61,8 @@ const NODE_COLORS: Record<string, string> = {
 	default: "#64748b",
 };
 
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 92;
+const NODE_WIDTH = 240;
+const NODE_HEIGHT = 116;
 
 type FlowCssVars = CSSProperties & Record<`--${string}`, string>;
 
@@ -279,10 +279,10 @@ function getLayoutedNodes(
 	const graph = new dagre.graphlib.Graph();
 	graph.setGraph({
 		rankdir: nodes.length > 10 ? "LR" : "TB",
-		nodesep: 42,
-		ranksep: 110,
-		marginx: 32,
-		marginy: 32,
+		nodesep: 72,
+		ranksep: 160,
+		marginx: 48,
+		marginy: 48,
 	});
 	graph.setDefaultEdgeLabel(() => ({}));
 
@@ -420,8 +420,8 @@ export default function ReactFlowGraph({
 				id: edge.edge_id,
 				source: edge.source_id,
 				target: edge.target_id,
-				animated: true,
-				label: edge.relation_type,
+				animated: isSelected,
+				label: isSelected ? edge.relation_type : undefined,
 				markerEnd: {
 					type: MarkerType.ArrowClosed,
 					width: 18,
@@ -432,28 +432,28 @@ export default function ReactFlowGraph({
 					stroke: isSelected
 						? "var(--graph-edge-selected)"
 						: "var(--graph-edge-color)",
-					strokeWidth: isSelected ? 2.5 : 1.6,
-					opacity: isDimmed ? 0.2 : 1,
+					strokeWidth: isSelected ? 2.5 : 1.4,
+					opacity: isDimmed ? 0.15 : 0.9,
 				},
-				labelStyle: {
-					fill: isSelected
-						? "var(--graph-edge-label-selected-text)"
-						: "var(--graph-edge-label-text)",
-					fontSize: 11,
-					fontWeight: 600,
-				},
-				labelBgStyle: {
-					fill: "var(--graph-edge-label-bg)",
-					stroke: isSelected
-						? "var(--graph-edge-selected)"
-						: "var(--graph-edge-color)",
-					strokeWidth: 1,
-					fillOpacity: isSelected ? 0.94 : 0.86,
-					rx: 6,
-					ry: 6,
-				},
-				labelBgPadding: [6, 3],
-				labelBgBorderRadius: 6,
+				...(isSelected
+					? {
+							labelStyle: {
+								fill: "var(--graph-edge-label-selected-text)",
+								fontSize: 11,
+								fontWeight: 600,
+							},
+							labelBgStyle: {
+								fill: "var(--graph-edge-label-bg)",
+								stroke: "var(--graph-edge-selected)",
+								strokeWidth: 1,
+								fillOpacity: 0.94,
+								rx: 6,
+								ry: 6,
+							},
+							labelBgPadding: [6, 3] as [number, number],
+							labelBgBorderRadius: 6,
+						}
+					: {}),
 			};
 		});
 	}, [colorMode, edges, selectedNodeId]);
