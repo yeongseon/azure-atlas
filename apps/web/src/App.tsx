@@ -7,6 +7,7 @@ const ConceptGraphPage = lazy(() => import('./pages/ConceptGraphPage'))
 const UnifiedGraphPage = lazy(() => import('./pages/UnifiedGraphPage'))
 const SearchPage = lazy(() => import('./pages/SearchPage'))
 const JourneyPage = lazy(() => import('./pages/JourneyPage'))
+const NodeExplorerPage = lazy(() => import('./pages/NodeExplorerPage'))
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/domains/:domainId" element={<ConceptGraphPage />} />
             <Route path="/nodes/:nodeId" element={<ConceptGraphPage />} />
             <Route path="/graph" element={<UnifiedGraphPage />} />
+            <Route path="/explore/:nodeId" element={<NodeExplorerPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/journeys/:journeyId" element={<JourneyPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

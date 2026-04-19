@@ -183,7 +183,7 @@ export default function ConceptGraphPage() {
 
   const handleNodeClick = useCallback((id: string) => {
     setSelectedNodeId(id)
-    navigate(`/nodes/${id}`)
+    navigate(`/explore/${id}`)
   }, [navigate])
 
   const graphNodes = useMemo(() => (

@@ -1,12 +1,25 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import EvidencePanel from '../components/EvidencePanel'
 import ReactFlowGraph from '../components/ReactFlowGraph'
+import {
+  getSemanticLayoutedNodes,
+  SemanticLayerIndicator,
+  ViewSwitcher,
+  type ViewType,
+} from '../components/graph'
 import { useAllGraph, useDomains } from '../hooks/useAtlas'
 
 const DOMAIN_COLORS: Record<string, string> = {
   network: '#3b82f6',
   storage: '#10b981',
   compute: '#f59e0b',
+}
+
+const VIEW_LABELS: Record<ViewType, string> = {
+  taxonomy: 'Taxonomy View',
+  topology: 'Topology View',
+  dependency: 'Dependency View',
+  journey: 'Journey View',
 }
 
 const s: Record<string, React.CSSProperties> = {
@@ -54,6 +67,16 @@ const s: Record<string, React.CSSProperties> = {
     height: 8,
     borderRadius: '50%',
   },
+  layerToggle: {
+    padding: '4px 10px',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    borderRadius: 8,
+    border: '1px solid var(--border)',
+    cursor: 'pointer',
+    transition: 'all 140ms ease',
+    whiteSpace: 'nowrap',
+  },
   body: { flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' },
   graphContainer: { flex: 1, position: 'relative' },
 }
@@ -62,6 +85,8 @@ export default function UnifiedGraphPage() {
   const { data, isLoading, error } = useAllGraph()
   const { data: domainsData } = useDomains()
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  const [activeView, setActiveView] = useState<ViewType>('taxonomy')
+  const [layersEnabled, setLayersEnabled] = useState(true)
 
   const handleNodeClick = useCallback((id: string) => {
     setSelectedNodeId(id)
@@ -83,12 +108,24 @@ export default function UnifiedGraphPage() {
     <div style={s.page}>
       <div style={s.toolbarContainer}>
         <div style={s.toolbar}>
-          <span style={s.title}>Unified Graph</span>
+          <span style={s.title}>{VIEW_LABELS[activeView]}</span>
+          <ViewSwitcher activeView={activeView} onViewChange={setActiveView} />
           <span style={s.stats}>
             {nodes.length} nodes · {edges.length} edges · {data?.domain_count ?? 0} domains
           </span>
 
           <div style={s.toolbarRight}>
+            <button
+              type="button"
+              style={{
+                ...s.layerToggle,
+                background: layersEnabled ? 'var(--surface-2)' : 'transparent',
+                color: layersEnabled ? 'var(--text-primary)' : 'var(--text-muted)',
+              }}
+              onClick={() => setLayersEnabled((prev) => !prev)}
+            >
+              {layersEnabled ? '◆ Layers' : '◇ Layers'}
+            </button>
             <div style={s.legendInline}>
               {legend.map(({ label, color }) => (
                 <span key={label} style={s.legendItem}>
@@ -104,14 +141,16 @@ export default function UnifiedGraphPage() {
 
       <div style={s.body}>
         <div style={s.graphContainer}>
+          <SemanticLayerIndicator visible={layersEnabled} />
           {nodes.length === 0 ? (
             <div className="loading">No graph data available</div>
           ) : (
-            <ReactFlowGraph
+            <SemanticGraphView
               nodes={nodes}
               edges={edges}
+              activeView={activeView}
+              layersEnabled={layersEnabled}
               onNodeClick={handleNodeClick}
-              domainColors={DOMAIN_COLORS}
             />
           )}
         </div>
@@ -124,5 +163,42 @@ export default function UnifiedGraphPage() {
         )}
       </div>
     </div>
+  )
+}
+
+/** Inner component to memoize the semantic layout computation */
+function SemanticGraphView({
+  nodes,
+  edges,
+  activeView,
+  layersEnabled,
+  onNodeClick,
+}: {
+  nodes: NonNullable<ReturnType<typeof useAllGraph>['data']>['nodes']
+  edges: NonNullable<ReturnType<typeof useAllGraph>['data']>['edges']
+  activeView: ViewType
+  layersEnabled: boolean
+  onNodeClick: (id: string) => void
+}) {
+  const layout = useMemo(
+    () =>
+      getSemanticLayoutedNodes(nodes, edges, { view: activeView, semanticLayerEnabled: layersEnabled }, DOMAIN_COLORS),
+    [nodes, edges, activeView, layersEnabled],
+  )
+
+  return (
+    <ReactFlowGraph
+      nodes={nodes}
+      edges={layout.filteredEdges.map((e) => ({
+        edge_id: e.edge_id ?? `${e.source_id}-${e.target_id}`,
+        source_id: e.source_id,
+        target_id: e.target_id,
+        relation_type: e.relation_type,
+        weight: e.weight,
+      }))}
+      onNodeClick={onNodeClick}
+      domainColors={DOMAIN_COLORS}
+      preLayoutedNodes={layout.nodes}
+    />
   )
 }

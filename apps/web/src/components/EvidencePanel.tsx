@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { useEvidence, useNode } from '../hooks/useAtlas'
 
@@ -136,14 +137,37 @@ export default function EvidencePanel({ nodeId, onClose }: Props) {
   const { data: nodeData, isLoading: nodeLoading, error: nodeError } = useNode(nodeId)
   const { data: evidenceData, isLoading: evLoading, error: evError } = useEvidence(nodeId)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+    const panel = panelRef.current
+    if (!panel) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      // Focus trap
+      if (e.key === 'Tab') {
+        const focusable = panel.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
     }
 
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
 
   useEffect(() => {
@@ -156,6 +180,9 @@ export default function EvidencePanel({ nodeId, onClose }: Props) {
 
   return (
     <aside
+      ref={panelRef}
+      role="dialog"
+      aria-modal="true"
       className="evidence-panel"
       aria-labelledby="evidence-panel-title"
     >
@@ -168,7 +195,24 @@ export default function EvidencePanel({ nodeId, onClose }: Props) {
           ) : (
             <>
               <div id="evidence-panel-title" style={s.label}>{node?.label}</div>
-              <span className={`badge badge--${node?.node_type}`}>{node?.node_type}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span className={`badge badge--${node?.node_type}`}>{node?.node_type}</span>
+                <Link
+                  to={`/explore/${nodeId}`}
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: 'var(--brand)',
+                    textDecoration: 'none',
+                    padding: '2px 8px',
+                    borderRadius: 6,
+                    border: '1px solid var(--brand)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Explore →
+                </Link>
+              </div>
             </>
           )}
         </div>

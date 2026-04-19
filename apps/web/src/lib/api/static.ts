@@ -77,6 +77,7 @@ function buildAllGraph(dataset: LoadedAtlasDataset): UnifiedGraphResponse {
     summary: node.summary,
     evidence_count: dataset.evidenceCountByNodeId.get(node.node_id) ?? 0,
     domain_id: node.domain_id,
+    semantic_layer: null,
   }))
 
   return {
@@ -84,6 +85,9 @@ function buildAllGraph(dataset: LoadedAtlasDataset): UnifiedGraphResponse {
     edges: dataset.edges,
     domain_count: dataset.domains.length,
     node_count: nodes.length,
+    total_nodes: nodes.length,
+    limit: nodes.length,
+    offset: 0,
   }
 }
 
@@ -99,6 +103,8 @@ function buildNodeDetail(dataset: LoadedAtlasDataset, nodeId: string): NodeDetai
       node_type: node.node_type,
       summary: node.summary,
       detail_md: node.detail_md,
+      semantic_layer: null,
+      view_hints: null,
     },
   }
 }

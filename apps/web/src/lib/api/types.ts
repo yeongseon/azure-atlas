@@ -30,7 +30,7 @@ export interface DomainDetail {
 }
 
 export interface NodeDetail {
-  node: NodePreview & { domain_id: string; detail_md: string | null }
+  node: NodePreview & { domain_id: string; detail_md: string | null; semantic_layer: string | null; view_hints: Record<string, unknown> | null }
 }
 
 export interface SubgraphResponse {
@@ -40,10 +40,13 @@ export interface SubgraphResponse {
 }
 
 export interface UnifiedGraphResponse {
-  nodes: (NodePreview & { evidence_count: number; domain_id: string })[]
+  nodes: (NodePreview & { evidence_count: number; domain_id: string; semantic_layer: string | null })[]
   edges: EdgeSummary[]
   domain_count: number
   node_count: number
+  total_nodes: number
+  limit: number
+  offset: number
 }
 
 export interface EvidenceItem {
