@@ -13,11 +13,10 @@ from app.routers import curation, domains, events, graph, journeys, nodes, searc
 
 API_V1_PREFIX = "/api/v1"
 
-if settings.environment != "development" and not settings.api_key:
-    sys.exit(
-        "FATAL: API_KEY must be set when ENVIRONMENT != development. "
-        "Set a non-empty API_KEY environment variable."
-    )
+try:
+    settings.validate_production_settings()
+except ValueError as exc:
+    sys.exit(f"FATAL: {exc}")
 
 
 @asynccontextmanager
