@@ -21,7 +21,8 @@ class NodeDetail(BaseModel):
     node_type: str
     summary: Optional[str] = None
     detail_md: Optional[str] = None
-
+    semantic_layer: Optional[str] = None
+    view_hints: Optional[dict] = None
 
 class NodeDetailResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -37,6 +38,7 @@ class GraphNodeSummary(BaseModel):
     node_type: str
     summary: Optional[str] = None
     evidence_count: int = 0
+    semantic_layer: Optional[str] = None
 
 
 class GraphEdgeSummary(BaseModel):

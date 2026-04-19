@@ -14,6 +14,7 @@ class UnifiedGraphNode(BaseModel):
     node_type: str
     summary: Optional[str] = None
     evidence_count: int = 0
+    semantic_layer: Optional[str] = None
 
 
 class UnifiedGraphResponse(BaseModel):
@@ -23,3 +24,6 @@ class UnifiedGraphResponse(BaseModel):
     edges: list[GraphEdgeSummary]
     domain_count: int
     node_count: int
+    total_nodes: int = 0
+    limit: int = 200
+    offset: int = 0
