@@ -85,7 +85,7 @@ export default function UnifiedGraphPage() {
   const { data, isLoading, error } = useAllGraph()
   const { data: domainsData } = useDomains()
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
-  const [activeView, setActiveView] = useState<ViewType>('taxonomy')
+  const [activeView, setActiveView] = useState<ViewType>('topology')
   const [layersEnabled, setLayersEnabled] = useState(true)
 
   const handleNodeClick = useCallback((id: string) => {
