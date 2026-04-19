@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import EvidencePanel from '../components/EvidencePanel'
+import { JourneyGraphView } from '../components/JourneyGraphView'
 import { useDomain, useJourney } from '../hooks/useAtlas'
 
 const s: Record<string, React.CSSProperties> = {
@@ -136,7 +137,7 @@ export default function JourneyPage() {
   const { journeyId } = useParams<{ journeyId: string }>()
   const { data, isLoading, error } = useJourney(journeyId ?? '')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
-
+  const [viewMode, setViewMode] = useState<'list' | 'graph'>('list')
   const domainId = data?.journey?.domain_id
   const { data: domainData } = useDomain(domainId ?? '')
 
@@ -151,62 +152,111 @@ export default function JourneyPage() {
 
   return (
     <div style={s.page}>
-      <div style={s.main}>
-        <nav aria-label="Breadcrumb" style={s.breadcrumb}>
-          <Link to="/" style={s.breadcrumbLink}>Domains</Link>
-          {journey.domain_id && domainData?.domain?.label && (
-            <>
-              <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
-              <Link to={`/domains/${journey.domain_id}`} style={s.breadcrumbLink}>
-                {domainData.domain.label}
-              </Link>
-            </>
-          )}
-          <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
-          <span style={{ color: 'var(--text-primary)' }}>Journeys</span>
-        </nav>
+      {viewMode === 'list' ? (
+        <div style={s.main}>
+          <nav aria-label="Breadcrumb" style={s.breadcrumb}>
+            <Link to="/" style={s.breadcrumbLink}>Domains</Link>
+            {journey.domain_id && domainData?.domain?.label && (
+              <>
+                <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
+                <Link to={`/domains/${journey.domain_id}`} style={s.breadcrumbLink}>
+                  {domainData.domain.label}
+                </Link>
+              </>
+            )}
+            <span style={{ margin: '0 0.5rem', color: 'var(--text-muted)' }}>/</span>
+            <span style={{ color: 'var(--text-primary)' }}>Journeys</span>
+          </nav>
 
-        <h1 style={s.title}>{journey.title}</h1>
-        {journey.description && <p style={s.desc}>{journey.description}</p>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            <h1 style={{ ...s.title, marginBottom: 0 }}>{journey.title}</h1>
+            <button
+              type="button"
+              onClick={() => setViewMode('graph')}
+              style={{
+                padding: '4px 12px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--surface-2)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+              }}
+            >
+              ◈ 3D View
+            </button>
+          </div>
+          {journey.description && <p style={s.desc}>{journey.description}</p>}
 
-        <div style={s.stepList}>
-          {steps.map((step, idx) => {
-            const isLast = idx === steps.length - 1
-            const isActive = selectedNodeId === step.node_id
-            const isPassed = activeStepIndex > -1 && idx < activeStepIndex
-            
-            return (
-              <div key={step.node_id} style={s.stepRow}>
-                <div style={s.stepNumber}>
-                  <div style={isActive ? s.circleActive : isPassed ? s.circlePassed : s.circle}>
-                    {step.step_order}
+          <div style={s.stepList}>
+            {steps.map((step, idx) => {
+              const isLast = idx === steps.length - 1
+              const isActive = selectedNodeId === step.node_id
+              const isPassed = activeStepIndex > -1 && idx < activeStepIndex
+
+              return (
+                <div key={step.node_id} style={s.stepRow}>
+                  <div style={s.stepNumber}>
+                    <div style={isActive ? s.circleActive : isPassed ? s.circlePassed : s.circle}>
+                      {step.step_order}
+                    </div>
+                    {!isLast && <div style={isActive || isPassed ? s.lineActive : s.line} />}
                   </div>
-                  {!isLast && <div style={isActive || isPassed ? s.lineActive : s.line} />}
-                </div>
                   <div style={s.stepContent}>
                     <button
                       type="button"
                       style={isActive ? s.nodeCardActive : s.nodeCard}
                       onClick={() => setSelectedNodeId(isActive ? null : step.node_id)}
-                      className={isActive ? "" : "card"}
+                      className={isActive ? '' : 'card'}
                       aria-expanded={isActive}
                     >
                       <div style={s.nodeLabel}>{step.label}</div>
                       {step.narrative && <p style={s.narrative}>{step.narrative}</p>}
                     </button>
-                    <Link 
-                      to={`/nodes/${step.node_id}`} 
+                    <Link
+                      to={`/explore/${step.node_id}`}
                       style={s.exploreLink}
                       className="btn--ghost"
                     >
                       Explore in graph →
                     </Link>
                   </div>
-              </div>
-            )
-          })}
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '0.75rem 2rem', display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '1px solid var(--border)', background: 'var(--surface-1)' }}>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              style={{
+                padding: '4px 12px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--surface-2)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+              }}
+            >
+              ← List View
+            </button>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{journey.title}</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{steps.length} steps · 2.5D Journey View</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            <JourneyGraphView
+              steps={steps}
+              onNodeClick={(id) => setSelectedNodeId(id)}
+            />
+          </div>
+        </div>
+      )}
 
       {selectedNodeId && (
         <EvidencePanel
