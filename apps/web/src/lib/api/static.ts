@@ -69,6 +69,20 @@ function buildDomainDetail(dataset: LoadedAtlasDataset, domainId: string): Domai
   }
 }
 
+const SEMANTIC_LAYER_MAP: Record<string, string> = {
+  service: 'middle',
+  resource: 'middle',
+  domain: 'middle',
+  subdomain: 'middle',
+  concept: 'upper',
+  principle: 'upper',
+  pattern: 'upper',
+  decision: 'upper',
+  evidence: 'lower',
+  step: 'lower',
+  journey: 'lower',
+}
+
 function buildAllGraph(dataset: LoadedAtlasDataset): UnifiedGraphResponse {
   const nodes = dataset.nodes.map(node => ({
     node_id: node.node_id,
@@ -77,7 +91,7 @@ function buildAllGraph(dataset: LoadedAtlasDataset): UnifiedGraphResponse {
     summary: node.summary,
     evidence_count: dataset.evidenceCountByNodeId.get(node.node_id) ?? 0,
     domain_id: node.domain_id,
-    semantic_layer: null,
+    semantic_layer: SEMANTIC_LAYER_MAP[node.node_type] ?? 'middle',
   }))
 
   return {
@@ -103,7 +117,7 @@ function buildNodeDetail(dataset: LoadedAtlasDataset, nodeId: string): NodeDetai
       node_type: node.node_type,
       summary: node.summary,
       detail_md: node.detail_md,
-      semantic_layer: null,
+      semantic_layer: SEMANTIC_LAYER_MAP[node.node_type] ?? 'middle',
       view_hints: null,
     },
   }

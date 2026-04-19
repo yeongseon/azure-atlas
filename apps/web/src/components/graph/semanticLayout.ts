@@ -40,10 +40,10 @@ const VIEW_DAGRE_CONFIG: Record<ViewType, { rankdir: string; ranksep: number; no
 }
 
 const VIEW_EDGE_FILTER: Record<ViewType, Set<string> | null> = {
-  taxonomy: new Set(['is_a', 'part_of', 'contains']),
+  taxonomy: new Set(['is_a', 'part_of', 'contains', 'belongs_to', 'attached_to']),
   topology: null, // all edges
-  dependency: new Set(['implements', 'used_in', 'depends_on', 'requires']),
-  journey: new Set(['precedes']),
+  dependency: new Set(['implements', 'used_in', 'depends_on', 'requires', 'secures', 'monitors', 'connects_to', 'routes_to', 'resolves_via']),
+  journey: new Set(['precedes', 'prerequisite_for']),
 }
 
 const LAYER_Y_OFFSETS: Record<string, number> = {
