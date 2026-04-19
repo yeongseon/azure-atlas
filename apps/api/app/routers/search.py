@@ -19,34 +19,52 @@ async def search(
         return SearchResponse(query=q, results=[], total=0)
 
     async with pool.acquire() as conn:
-        base_filter = "n.status = 'approved'"
-        params: list = [q, limit]
-
-        type_clause = ""
         if node_type:
-            type_clause = " AND n.node_type = $3"
-            params.append(node_type)
-
-        rows = await conn.fetch(
-            f"""
-            SELECT
-                n.node_id,
-                n.label,
-                n.node_type,
-                n.summary,
-                ts_rank(n.search_tsv, websearch_to_tsquery('english', $1)) AS fts_rank,
-                similarity(n.label, $1) AS trgm_rank
-            FROM nodes n
-            WHERE {base_filter}{type_clause}
-              AND (
-                  n.search_tsv @@ websearch_to_tsquery('english', $1)
-                  OR n.label % $1
-              )
-            ORDER BY fts_rank DESC, trgm_rank DESC
-            LIMIT $2
-            """,
-            *params,
-        )
+            rows = await conn.fetch(
+                """
+                SELECT
+                    n.node_id,
+                    n.label,
+                    n.node_type,
+                    n.summary,
+                    ts_rank(n.search_tsv, websearch_to_tsquery('english', $1)) AS fts_rank,
+                    similarity(n.label, $1) AS trgm_rank
+                FROM nodes n
+                WHERE n.status = 'approved'
+                  AND n.node_type = $3
+                  AND (
+                      n.search_tsv @@ websearch_to_tsquery('english', $1)
+                      OR n.label % $1
+                  )
+                ORDER BY fts_rank DESC, trgm_rank DESC
+                LIMIT $2
+                """,
+                q,
+                limit,
+                node_type,
+            )
+        else:
+            rows = await conn.fetch(
+                """
+                SELECT
+                    n.node_id,
+                    n.label,
+                    n.node_type,
+                    n.summary,
+                    ts_rank(n.search_tsv, websearch_to_tsquery('english', $1)) AS fts_rank,
+                    similarity(n.label, $1) AS trgm_rank
+                FROM nodes n
+                WHERE n.status = 'approved'
+                  AND (
+                      n.search_tsv @@ websearch_to_tsquery('english', $1)
+                      OR n.label % $1
+                  )
+                ORDER BY fts_rank DESC, trgm_rank DESC
+                LIMIT $2
+                """,
+                q,
+                limit,
+            )
 
     results = [
         NodePreview(
