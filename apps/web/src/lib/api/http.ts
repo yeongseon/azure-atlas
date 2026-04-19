@@ -13,9 +13,33 @@ import type {
 
 const BASE = import.meta.env.VITE_API_URL ?? '/api/v1'
 
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly path: string,
+    public readonly body?: string,
+  ) {
+    super(`API error ${status}: ${path}`)
+    this.name = 'ApiError'
+  }
+}
+
 async function apiFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`)
-  if (!res.ok) throw new Error(`API error ${res.status}: ${path}`)
+  let res: Response
+  try {
+    res = await fetch(`${BASE}${path}`)
+  } catch (err) {
+    throw new ApiError(0, path, err instanceof Error ? err.message : 'Network error')
+  }
+  if (!res.ok) {
+    let body: string | undefined
+    try {
+      body = await res.text()
+    } catch {
+      // ignore body read failure
+    }
+    throw new ApiError(res.status, path, body)
+  }
   return res.json() as Promise<T>
 }
 
